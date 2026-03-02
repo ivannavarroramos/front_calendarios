@@ -33,6 +33,10 @@ export interface MassUpdatePayload {
   nueva_fecha: string
   nueva_hora?: string
   fecha_desde: string
+  usuario: string
+  motivo?: number
+  observaciones?: string
+  codSubDepar?: string
 }
 
 export interface ClienteProcesoHitoResumido {

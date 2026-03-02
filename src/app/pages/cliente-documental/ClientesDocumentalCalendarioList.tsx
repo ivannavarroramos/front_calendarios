@@ -1,6 +1,6 @@
 import { FC, useState, useEffect, useMemo } from 'react'
 import { KTCard, KTCardBody } from '../../../_metronic/helpers'
-import { Cliente, getAllClientes, getClientesUsuario } from '../../api/clientes'
+import { Cliente, getAllClientes, getClientesUsuario, getDropdownClientes } from '../../api/clientes'
 import { getClienteProcesosByCliente } from '../../api/clienteProcesos'
 import SharedPagination from '../../components/pagination/SharedPagination'
 import { useNavigate } from 'react-router-dom'
@@ -25,6 +25,8 @@ const ClientesDocumentalCalendarioList: FC = () => {
   const [sortField, setSortField] = useState<string>('idcliente')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [clientesConProcesos, setClientesConProcesos] = useState<Set<string>>(new Set())
+  const [filtroCalendario, setFiltroCalendario] = useState<'todos' | 'con' | 'sin'>('todos')
+  const [clientesCalendarioIds, setClientesCalendarioIds] = useState<Set<string>>(new Set())
 
 
   const [toast, setToast] = useState<{ show: boolean, message: string, type: 'success' | 'error' | 'info' }>({
@@ -32,6 +34,19 @@ const ClientesDocumentalCalendarioList: FC = () => {
     message: '',
     type: 'info'
   })
+
+  // Cargar lista global de IDs de clientes con calendario
+  useEffect(() => {
+    const loadGlobalCalendarIds = async () => {
+      try {
+        const cls = await getDropdownClientes()
+        setClientesCalendarioIds(new Set(cls.map(c => c.idcliente)))
+      } catch (e) {
+        console.error('Error al cargar clientes con calendario global:', e)
+      }
+    }
+    loadGlobalCalendarIds()
+  }, [])
 
   // Debounce para el término de búsqueda
   useEffect(() => {
@@ -52,26 +67,24 @@ const ClientesDocumentalCalendarioList: FC = () => {
     }
   }, [searchTerm])
 
-  // Cargar clientes paginados cuando NO hay búsqueda
+  // Cargar clientes paginados cuando NO hay búsqueda ni filtro
   useEffect(() => {
-    // Solo cargar si tenemos información de usuario (o es admin, o currentUser está listo)
-    // Pero useAuth puede tardar un poco en iniciarse. isAdmin false por defecto?
-    // Mejor esperar a que se verifique auth si es posible, pero aquí isAdmin es booleano.
-    if (!debouncedSearchTerm.trim()) {
+    // Solo cargar si tenemos información de usuario
+    if (!debouncedSearchTerm.trim() && filtroCalendario === 'todos') {
       loadClientes()
     }
-  }, [page, sortField, sortDirection, debouncedSearchTerm, isAdmin, currentUser])
+  }, [page, sortField, sortDirection, debouncedSearchTerm, filtroCalendario, isAdmin, currentUser])
 
-  // Cargar todos los clientes cuando hay búsqueda
+  // Cargar todos los clientes cuando hay búsqueda o filtro
   useEffect(() => {
-    if (debouncedSearchTerm.trim()) {
-      setPage(1) // Resetear a la primera página cuando hay búsqueda
+    if (debouncedSearchTerm.trim() || filtroCalendario !== 'todos') {
+      setPage(1) // Resetear a la primera página cuando hay búsqueda o filtro
       loadAllClientes()
     } else {
-      // Limpiar todos los clientes cuando no hay búsqueda
+      // Limpiar todos los clientes cuando no hay búsqueda ni filtro
       setAllClientes([])
     }
-  }, [debouncedSearchTerm, isAdmin, currentUser])
+  }, [debouncedSearchTerm, filtroCalendario, isAdmin, currentUser])
 
   const loadAllClientes = async () => {
     try {
@@ -198,57 +211,68 @@ const ClientesDocumentalCalendarioList: FC = () => {
 
   // Filtrar clientes usando useMemo para optimizar el rendimiento
   const filteredClientes = useMemo(() => {
-    // Si hay búsqueda, usar allClientes; si no, usar clientes paginados
-    const clientesToFilter = debouncedSearchTerm.trim() ? allClientes : clientes
+    const isSearchActive = debouncedSearchTerm.trim().length > 0
+    const isFilterActive = filtroCalendario !== 'todos'
 
-    if (!debouncedSearchTerm || !debouncedSearchTerm.trim()) return clientesToFilter
+    // Si hay búsqueda o filtro, usar allClientes; si no, usar clientes paginados
+    const clientesToFilter = (isSearchActive || isFilterActive) ? allClientes : clientes
 
-    // Normalizar el término de búsqueda (asegurarse de que se convierta a string y luego normalizar)
+    if (!isSearchActive && !isFilterActive) return clientesToFilter
+
+    // Normalizar el término de búsqueda
     const searchTermStr = String(debouncedSearchTerm).trim()
-    if (!searchTermStr) return clientesToFilter
-
-    const searchNormalized = normalizeText(searchTermStr)
+    const searchNormalized = searchTermStr ? normalizeText(searchTermStr) : ''
 
     return clientesToFilter.filter((cliente) => {
-      // Buscar en campos: razsoc y cif
-      const searchFields = [
-        cliente.razsoc,
-        cliente.cif
-      ]
+      let matchesSearch = true
+      if (searchNormalized) {
+        const searchFields = [cliente.razsoc, cliente.cif]
+        matchesSearch = searchFields.some(field => {
+          if (!field) return false
+          const fieldNormalized = normalizeText(field)
+          return fieldNormalized.includes(searchNormalized)
+        })
+      }
 
-      return searchFields.some(field => {
-        if (!field) return false
-        const fieldNormalized = normalizeText(field)
-        return fieldNormalized.includes(searchNormalized)
-      })
+      let matchesFilter = true
+      if (isFilterActive) {
+        const hasCalendar = clientesCalendarioIds.has(cliente.idcliente)
+        if (filtroCalendario === 'con') {
+          matchesFilter = hasCalendar
+        } else if (filtroCalendario === 'sin') {
+          matchesFilter = !hasCalendar
+        }
+      }
+
+      return matchesSearch && matchesFilter
     })
-  }, [clientes, allClientes, debouncedSearchTerm])
+  }, [clientes, allClientes, debouncedSearchTerm, filtroCalendario, clientesCalendarioIds])
 
   // Aplicar paginación a los resultados filtrados
   const paginatedClientes = useMemo(() => {
-    if (!debouncedSearchTerm.trim()) {
+    if (!debouncedSearchTerm.trim() && filtroCalendario === 'todos') {
       return filteredClientes
     }
-    // Cuando hay búsqueda, aplicar paginación a los resultados filtrados
+    // Cuando hay búsqueda o filtro, aplicar paginación local a los resultados filtrados
     const startIndex = (page - 1) * limit
     const endIndex = startIndex + limit
     return filteredClientes.slice(startIndex, endIndex)
-  }, [filteredClientes, page, limit, debouncedSearchTerm])
+  }, [filteredClientes, page, limit, debouncedSearchTerm, filtroCalendario])
 
-  // Verificar procesos para los clientes visibles en la página actual (solo cuando hay búsqueda)
+  // Verificar procesos para los clientes visibles en la página actual (solo cuando hay búsqueda o filtro)
   useEffect(() => {
-    if (debouncedSearchTerm.trim() && paginatedClientes.length > 0) {
+    if ((debouncedSearchTerm.trim() || filtroCalendario !== 'todos') && paginatedClientes.length > 0) {
       // Verificar procesos solo para los clientes visibles en la página actual
-      // Esto asegura que los botones "Ver Calendario" aparezcan correctamente durante la búsqueda
+      // Esto asegura que los botones "Ver Calendario" aparezcan correctamente
       verificarProcesosDeClientes(paginatedClientes)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginatedClientes, debouncedSearchTerm])
+  }, [paginatedClientes, debouncedSearchTerm, filtroCalendario])
 
   // Calcular el total para la paginación
   const totalForPagination = useMemo(() => {
-    return debouncedSearchTerm.trim() ? filteredClientes.length : total
-  }, [filteredClientes.length, total, debouncedSearchTerm])
+    return (debouncedSearchTerm.trim() || filtroCalendario !== 'todos') ? filteredClientes.length : total
+  }, [filteredClientes.length, total, debouncedSearchTerm, filtroCalendario])
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -403,82 +427,116 @@ const ClientesDocumentalCalendarioList: FC = () => {
             border: `1px solid ${atisaStyles.colors.light}`
           }}
         >
-          <div className='input-group' style={{ position: 'relative' }}>
-            <input
-              type='text'
-              className='form-control'
-              placeholder='Buscar por razón social o CIF...'
-              value={searchTerm}
-              onChange={handleSearch}
-              style={{
-                fontFamily: atisaStyles.fonts.secondary,
-                fontSize: '14px',
-                padding: '12px 16px',
-                height: '48px',
-                border: `2px solid ${atisaStyles.colors.light}`,
-                borderRadius: '8px 0 0 8px',
-                transition: 'all 0.3s ease',
-                backgroundColor: 'white',
-                paddingRight: searching ? '50px' : '16px'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = atisaStyles.colors.accent
-                e.target.style.boxShadow = `0 0 0 3px ${atisaStyles.colors.accent}20`
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = atisaStyles.colors.light
-                e.target.style.boxShadow = 'none'
-              }}
-            />
-            {searching && (
-              <div
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className='input-group' style={{ position: 'relative', flex: '1 1 min-content' }}>
+              <input
+                type='text'
+                className='form-control'
+                placeholder='Buscar por razón social o CIF...'
+                value={searchTerm}
+                onChange={handleSearch}
                 style={{
-                  position: 'absolute',
-                  right: '60px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  zIndex: 10
+                  fontFamily: atisaStyles.fonts.secondary,
+                  fontSize: '14px',
+                  padding: '12px 16px',
+                  height: '48px',
+                  border: `2px solid ${atisaStyles.colors.light}`,
+                  borderRadius: '8px 0 0 8px',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: 'white',
+                  paddingRight: searching ? '50px' : '16px'
                 }}
-              >
+                onFocus={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.accent
+                  e.target.style.boxShadow = `0 0 0 3px ${atisaStyles.colors.accent}20`
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.light
+                  e.target.style.boxShadow = 'none'
+                }}
+              />
+              {searching && (
                 <div
-                  className="spinner-border spinner-border-sm"
-                  role="status"
                   style={{
-                    color: atisaStyles.colors.primary,
-                    width: '20px',
-                    height: '20px'
+                    position: 'absolute',
+                    right: '60px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    zIndex: 10
                   }}
                 >
-                  <span className="visually-hidden">Buscando...</span>
+                  <div
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                    style={{
+                      color: atisaStyles.colors.primary,
+                      width: '20px',
+                      height: '20px'
+                    }}
+                  >
+                    <span className="visually-hidden">Buscando...</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            <button
-              className='btn btn-primary'
-              type='button'
-              style={{
-                backgroundColor: atisaStyles.colors.secondary,
-                border: `2px solid ${atisaStyles.colors.secondary}`,
-                borderRadius: '0 8px 8px 0',
-                height: '48px',
-                padding: '0 20px',
-                fontFamily: atisaStyles.fonts.secondary,
-                fontWeight: '600',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                e.currentTarget.style.borderColor = atisaStyles.colors.accent
-                e.currentTarget.style.transform = 'scale(1.02)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                e.currentTarget.style.borderColor = atisaStyles.colors.secondary
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-            >
-              <i className='bi bi-search' style={{ fontSize: '16px' }}></i>
-            </button>
+              )}
+              <button
+                className='btn btn-primary'
+                type='button'
+                style={{
+                  backgroundColor: atisaStyles.colors.secondary,
+                  border: `2px solid ${atisaStyles.colors.secondary}`,
+                  borderRadius: '0 8px 8px 0',
+                  height: '48px',
+                  padding: '0 20px',
+                  fontFamily: atisaStyles.fonts.secondary,
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
+                  e.currentTarget.style.borderColor = atisaStyles.colors.accent
+                  e.currentTarget.style.transform = 'scale(1.02)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
+                  e.currentTarget.style.borderColor = atisaStyles.colors.secondary
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <i className='bi bi-search' style={{ fontSize: '16px' }}></i>
+              </button>
+            </div>
+
+            <div style={{ flexShrink: 0, minWidth: '220px' }}>
+              <select
+                className='form-select'
+                value={filtroCalendario}
+                onChange={(e) => {
+                  setFiltroCalendario(e.target.value as 'todos' | 'con' | 'sin')
+                }}
+                style={{
+                  fontFamily: atisaStyles.fonts.secondary,
+                  fontSize: '14px',
+                  height: '48px',
+                  border: `2px solid ${atisaStyles.colors.light}`,
+                  borderRadius: '8px',
+                  color: atisaStyles.colors.dark,
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.accent
+                  e.target.style.boxShadow = `0 0 0 3px ${atisaStyles.colors.accent}20`
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.light
+                  e.target.style.boxShadow = 'none'
+                }}
+              >
+                <option value='todos'>Todos</option>
+                <option value='con'>Con calendario</option>
+                <option value='sin'>Sin calendario</option>
+              </select>
+            </div>
           </div>
         </div>
 

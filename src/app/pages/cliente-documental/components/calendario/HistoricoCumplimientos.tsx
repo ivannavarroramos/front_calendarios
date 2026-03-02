@@ -3,6 +3,7 @@ import Select from 'react-select'
 import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../../styles/atisaStyles'
+import { formatDateDisplay } from '../../../../utils/dateFormatter'
 import SharedPagination from '../../../../components/pagination/SharedPagination'
 import { getClienteProcesoHitoCumplimientosByCliente, ClienteProcesoHitoCumplimiento } from '../../../../api/clienteProcesoHitoCumplimientos'
 import { Cliente, getClienteById } from '../../../../api/clientes'
@@ -41,11 +42,13 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
     const [hitos, setHitos] = useState<Hito[]>([])
     const [procesos, setProcesos] = useState<Proceso[]>([])
     const [subdepartamentos, setSubdepartamentos] = useState<Subdepartamento[]>([])
-    const [selectedDepartamentos, setSelectedDepartamentos] = useState<string[]>([])
+    const [selectedLineas, setSelectedLineas] = useState<string[]>([])
+    const [selectedCubos, setSelectedCubos] = useState<string[]>([])
+    const [selectedEstadoPlazo, setSelectedEstadoPlazo] = useState<string>('todos')
     const [selectedEstadoProceso, setSelectedEstadoProceso] = useState<'todos' | 'Finalizado' | 'En proceso'>('todos')
     const [showFilters, setShowFilters] = useState(false)
     const [downloadingCumplimientoId, setDownloadingCumplimientoId] = useState<number | null>(null)
-    const [sortField, setSortField] = useState<'fecha_cumplimiento' | 'hora_cumplimiento' | 'fecha_limite' | 'hora_limite' | 'usuario' | 'proceso' | 'hito' | 'observacion' | 'fecha_creacion' | 'departamento' | 'hito_tipo' | 'estado_plazo' | 'proceso_periodo' | 'proceso_estado' | 'num_documentos'>('fecha_creacion')
+    const [sortField, setSortField] = useState<'fecha_cumplimiento' | 'hora_cumplimiento' | 'fecha_limite' | 'hora_limite' | 'usuario' | 'proceso' | 'hito' | 'observacion' | 'fecha_creacion' | 'linea' | 'cubo' | 'hito_tipo' | 'estado_plazo' | 'proceso_periodo' | 'proceso_estado' | 'num_documentos'>('fecha_creacion')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
     // Función para cargar cumplimientos
@@ -111,6 +114,8 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
             setDebouncedSearchTerm(searchTerm)
             setSearching(false)
         }, 300) // 300ms de delay
+
+
 
         return () => {
             clearTimeout(timer)
@@ -263,12 +268,7 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
     }
 
     const formatDate = (date: string) => {
-        const d = new Date(date)
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        })
+        return formatDateDisplay(date)
     }
 
 
@@ -297,7 +297,9 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
         setSearchTerm('')
         setSelectedHito('')
         setSelectedProceso('')
-        setSelectedDepartamentos([])
+        setSelectedLineas([])
+        setSelectedCubos([])
+        setSelectedEstadoPlazo('todos')
         setSelectedEstadoProceso('todos')
         setFechaDesde('')
         setFechaHasta('')
@@ -306,7 +308,7 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
     }
 
     // Función para manejar el ordenamiento
-    const handleSort = (field: 'fecha_cumplimiento' | 'hora_cumplimiento' | 'fecha_limite' | 'hora_limite' | 'usuario' | 'proceso' | 'hito' | 'observacion' | 'fecha_creacion' | 'departamento' | 'hito_tipo' | 'estado_plazo' | 'proceso_periodo' | 'proceso_estado' | 'num_documentos') => {
+    const handleSort = (field: 'fecha_cumplimiento' | 'hora_cumplimiento' | 'fecha_limite' | 'hora_limite' | 'usuario' | 'proceso' | 'hito' | 'observacion' | 'fecha_creacion' | 'linea' | 'cubo' | 'hito_tipo' | 'estado_plazo' | 'proceso_periodo' | 'proceso_estado' | 'num_documentos') => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
         } else {
@@ -316,8 +318,9 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
     }
 
     // Función para obtener el icono de ordenamiento
-    const getSortIcon = (field: 'fecha_cumplimiento' | 'hora_cumplimiento' | 'fecha_limite' | 'hora_limite' | 'usuario' | 'proceso' | 'hito' | 'observacion' | 'fecha_creacion' | 'departamento' | 'hito_tipo' | 'estado_plazo' | 'proceso_periodo' | 'proceso_estado' | 'num_documentos') => {
+    const getSortIcon = (field: 'fecha_cumplimiento' | 'hora_cumplimiento' | 'fecha_limite' | 'hora_limite' | 'usuario' | 'proceso' | 'hito' | 'observacion' | 'fecha_creacion' | 'linea' | 'cubo' | 'hito_tipo' | 'estado_plazo' | 'proceso_periodo' | 'proceso_estado' | 'num_documentos') => {
         if (sortField !== field) {
+
             return (
                 <i
                     className="bi bi-arrow-down-up"
@@ -329,6 +332,8 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                 />
             )
         }
+
+
         return (
             <i
                 className={`bi ${sortDirection === 'asc' ? 'bi-sort-up' : 'bi-sort-down'}`}
@@ -391,7 +396,13 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                     break
 
 
-                case 'departamento':
+                case 'cubo':
+                    const cuboA = a.codSubDepar && a.codSubDepar.length >= 4 ? a.codSubDepar.substring(4) : ''
+                    const cuboB = b.codSubDepar && b.codSubDepar.length >= 4 ? b.codSubDepar.substring(4) : ''
+                    comparison = cuboA.localeCompare(cuboB, 'es', { sensitivity: 'base', numeric: true })
+                    break
+
+                case 'linea':
                     const depA = a.departamento || ''
                     const depB = b.departamento || ''
                     comparison = depA.localeCompare(depB, 'es', { sensitivity: 'base' })
@@ -481,7 +492,17 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
 
             const matchesHito = !selectedHito || cumplimiento.hito_id?.toString() === selectedHito
             const matchesProceso = !selectedProceso || cumplimiento.proceso_id?.toString() === selectedProceso
-            const matchesDepartamento = selectedDepartamentos.length === 0 || (cumplimiento.codSubDepar && selectedDepartamentos.includes(cumplimiento.codSubDepar))
+            const matchesLineas = selectedLineas.length === 0 || (cumplimiento.codSubDepar && selectedLineas.includes(cumplimiento.codSubDepar.substring(0, 4)))
+            const matchesCubos = selectedCubos.length === 0 || (cumplimiento.codSubDepar && selectedCubos.includes(cumplimiento.codSubDepar))
+
+            const getEstado = (c: CumplimientoHistorico) => {
+                if (!c.fecha_limite) return 'Cumplido'
+                const fechaCumpl = new Date(c.fecha + (c.hora ? 'T' + c.hora : 'T00:00:00'))
+                const fechaLim = new Date(c.fecha_limite + (c.hora_limite ? 'T' + c.hora_limite : 'T23:59:59'))
+                return fechaCumpl <= fechaLim ? 'Cumplido en plazo' : 'Cumplido fuera de plazo'
+            }
+            const matchesEstadoPlazo = selectedEstadoPlazo === 'todos' || getEstado(cumplimiento) === selectedEstadoPlazo
+
             const matchesEstadoProceso = selectedEstadoProceso === 'todos' || cumplimiento.proceso_estado === selectedEstadoProceso
 
 
@@ -517,12 +538,59 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                 }
             }
 
-            return matchesSearch && matchesHito && matchesProceso && matchesFecha && matchesDepartamento && matchesEstadoProceso
+            return matchesSearch && matchesHito && matchesProceso && matchesFecha && matchesLineas && matchesCubos && matchesEstadoProceso && matchesEstadoPlazo
         })
 
         // Aplicar ordenamiento
         return sortCumplimientos(filtrados)
-    }, [cumplimientos, debouncedSearchTerm, selectedHito, selectedProceso, selectedDepartamentos, selectedEstadoProceso, fechaDesde, fechaHasta, tipoFiltroFecha, sortField, sortDirection])
+    }, [cumplimientos, debouncedSearchTerm, selectedHito, selectedProceso, selectedLineas, selectedCubos, selectedEstadoProceso, fechaDesde, fechaHasta, tipoFiltroFecha, sortField, sortDirection])
+
+
+    const lineasUnicas = useMemo(() => {
+        const depMap = new Map<string, { cod: string, nombre: string }>()
+        subdepartamentos.forEach(sub => {
+            if (sub.codSubDepar) {
+                const codDep = sub.codSubDepar.substring(0, 4)
+                if (!depMap.has(codDep)) {
+                    depMap.set(codDep, { cod: codDep, nombre: sub.nombre || codDep })
+                }
+            }
+        })
+        return Array.from(depMap.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }))
+    }, [subdepartamentos])
+
+    const selectStyles = {
+        menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+        control: (base: any) => ({
+            ...base,
+            backgroundColor: 'rgba(255,255,255,0.12)',
+            borderColor: 'rgba(255,255,255,0.25)',
+            color: 'white',
+            borderRadius: '8px',
+            minHeight: '38px',
+            boxShadow: 'none',
+            '&:hover': {
+                borderColor: 'rgba(255,255,255,0.5)'
+            }
+        }),
+        menu: (base: any) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+        option: (base: any, state: any) => ({
+            ...base,
+            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+            color: atisaStyles.colors.dark,
+            cursor: 'pointer',
+            ':active': { backgroundColor: atisaStyles.colors.secondary }
+        }),
+        multiValue: (base: any) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
+        multiValueLabel: (base: any) => ({ ...base, color: 'white', fontSize: '12px', padding: '2px 6px' }),
+        multiValueRemove: (base: any) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
+        placeholder: (base: any) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }),
+        input: (base: any) => ({ ...base, color: 'white' }),
+        singleValue: (base: any) => ({ ...base, color: 'white' }),
+        indicatorSeparator: (base: any) => ({ ...base, backgroundColor: 'rgba(255,255,255,0.3)' }),
+        dropdownIndicator: (base: any) => ({ ...base, color: 'rgba(255,255,255,0.6)' }),
+        clearIndicator: (base: any) => ({ ...base, color: 'rgba(255,255,255,0.6)' }),
+    }
 
     return (
         <div
@@ -599,9 +667,9 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                         {/* Columna derecha: Botón Ver Calendario y Toggle Filtros */}
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center' }}>
                             {/* Badge filtros activos */}
-                            {(debouncedSearchTerm || selectedHito || selectedProceso || selectedDepartamentos.length > 0 || selectedEstadoProceso !== 'todos' || fechaDesde || fechaHasta) && (
+                            {(debouncedSearchTerm || selectedHito || selectedProceso || (selectedLineas.length > 0 || selectedCubos.length > 0 || selectedEstadoPlazo !== 'todos') || selectedEstadoProceso !== 'todos' || fechaDesde || fechaHasta) && (
                                 <span style={{ backgroundColor: '#f1416c', color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '12px', fontWeight: '700' }}>
-                                    {[debouncedSearchTerm ? 1 : 0, selectedHito ? 1 : 0, selectedProceso ? 1 : 0, selectedDepartamentos.length, selectedEstadoProceso !== 'todos' ? 1 : 0, fechaDesde ? 1 : 0, fechaHasta ? 1 : 0].reduce((a, b) => a + b, 0)} activos
+                                    {[debouncedSearchTerm ? 1 : 0, selectedHito ? 1 : 0, selectedProceso ? 1 : 0, selectedLineas.length, selectedCubos.length, selectedEstadoProceso !== 'todos' ? 1 : 0, selectedEstadoPlazo !== 'todos' ? 1 : 0, fechaDesde ? 1 : 0, fechaHasta ? 1 : 0].reduce((a, b) => a + b, 0)} activos
                                 </span>
                             )}
                             <button
@@ -694,14 +762,24 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                 }}
             >
                 {/* Cabecera del drawer */}
-                <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <i className="bi bi-funnel-fill" style={{ color: 'white', fontSize: '18px' }}></i>
                         <span style={{ color: 'white', fontFamily: atisaStyles.fonts.primary, fontWeight: '700', fontSize: '1.2rem' }}>Filtros</span>
                     </div>
-                    <button onClick={() => setShowFilters(false)} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: 'white', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>
-                        <i className="bi bi-x"></i>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                            className="btn btn-sm"
+                            onClick={limpiarFiltros}
+                            title="Limpiar filtros"
+                            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600', padding: '6px 12px' }}
+                        >
+                            <i className="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button onClick={() => setShowFilters(false)} title="Cerrar" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: 'white', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>
+                            <i className="bi bi-x"></i>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Contenido del drawer */}
@@ -731,23 +809,29 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                     {/* Hito */}
                     <div>
                         <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Hito</label>
-                        <select className="form-select form-select-sm" value={selectedHito} onChange={(e) => setSelectedHito(e.target.value)} style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}>
-                            <option value="" style={{ color: 'black' }}>Todos los hitos</option>
-                            {hitos.map((hito) => (
-                                <option key={hito.id} value={hito.id} style={{ color: 'black' }}>{hito.nombre}</option>
-                            ))}
-                        </select>
+                        <Select
+                            options={[{ value: '', label: 'Todos los hitos' }, ...hitos.map(h => ({ value: String(h.id), label: h.nombre }))]}
+                            value={selectedHito ? { value: selectedHito, label: hitos.find(h => String(h.id) === selectedHito)?.nombre || '' } : { value: '', label: 'Todos los hitos' }}
+                            onChange={(opt) => setSelectedHito(opt ? (opt as any).value : '')}
+                            placeholder="Todos los hitos..."
+                            noOptionsMessage={() => 'No hay opciones'}
+                            menuPortalTarget={document.body}
+                            styles={selectStyles}
+                        />
                     </div>
 
                     {/* Proceso */}
                     <div>
                         <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Proceso</label>
-                        <select className="form-select form-select-sm" value={selectedProceso} onChange={(e) => setSelectedProceso(e.target.value)} style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}>
-                            <option value="" style={{ color: 'black' }}>Todos los procesos</option>
-                            {procesos.map((proceso) => (
-                                <option key={proceso.id} value={proceso.id} style={{ color: 'black' }}>{proceso.nombre}</option>
-                            ))}
-                        </select>
+                        <Select
+                            options={[{ value: '', label: 'Todos los procesos' }, ...procesos.map(p => ({ value: String(p.id), label: p.nombre }))]}
+                            value={selectedProceso ? { value: selectedProceso, label: procesos.find(p => String(p.id) === selectedProceso)?.nombre || '' } : { value: '', label: 'Todos los procesos' }}
+                            onChange={(opt) => setSelectedProceso(opt ? (opt as any).value : '')}
+                            placeholder="Todos los procesos..."
+                            noOptionsMessage={() => 'No hay opciones'}
+                            menuPortalTarget={document.body}
+                            styles={selectStyles}
+                        />
                     </div>
 
                     {/* Estado Proceso */}
@@ -760,56 +844,61 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                         </select>
                     </div>
 
-                    {/* Departamentos (multi-select) */}
+                    {/* Líneas */}
                     <div>
-                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Departamentos</label>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Líneas</label>
                         <Select
                             isMulti
-                            options={subdepartamentos.map((subdep) => ({
-                                value: subdep.codSubDepar || '',
-                                label: `${subdep.codSubDepar?.substring(4)} - ${subdep.nombre}`
-                            }))}
-                            value={subdepartamentos
-                                .filter((subdep) => selectedDepartamentos.includes(subdep.codSubDepar || ''))
-                                .map((subdep) => ({
-                                    value: subdep.codSubDepar || '',
-                                    label: `${subdep.codSubDepar?.substring(4)} - ${subdep.nombre}`
-                                }))}
-                            onChange={(newValue) => {
-                                setSelectedDepartamentos(newValue.map((option) => option.value))
-                            }}
-                            placeholder="Seleccionar departamentos..."
+                            closeMenuOnSelect={false}
+                            options={lineasUnicas.map(d => ({ value: d.cod, label: d.nombre }))}
+                            value={lineasUnicas
+                                .filter(d => selectedLineas.includes(d.cod))
+                                .map(d => ({ value: d.cod, label: d.nombre }))
+                            }
+                            onChange={(opts) => setSelectedLineas(opts ? (opts as any[]).map(v => v.value) : [])}
+                            placeholder="Seleccionar líneas..."
                             noOptionsMessage={() => "No hay opciones"}
                             menuPortalTarget={document.body}
-                            styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({
-                                    ...base,
-                                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                                    borderColor: 'rgba(255, 255, 255, 0.25)',
-                                    color: 'white',
-                                    minHeight: '36px',
-                                    borderRadius: '8px'
-                                }),
-                                menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
-                                option: (base, state) => ({
-                                    ...base,
-                                    backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
-                                    color: atisaStyles.colors.dark,
-                                    cursor: 'pointer',
-                                    ':active': { backgroundColor: atisaStyles.colors.secondary }
-                                }),
-                                multiValue: (base) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
-                                multiValueLabel: (base) => ({ ...base, color: 'white', fontSize: '12px' }),
-                                multiValueRemove: (base) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
-                                placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
-                                input: (base) => ({ ...base, color: 'white' }),
-                                singleValue: (base) => ({ ...base, color: 'white' }),
-                                indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
-                                dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } }),
-                                clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } })
-                            }}
+                            styles={selectStyles}
                         />
+                    </div>
+
+                    {/* Cubos */}
+                    <div>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubos</label>
+                        <Select
+                            isMulti
+                            closeMenuOnSelect={false}
+                            options={subdepartamentos
+                                .filter(subDep => subDep.codSubDepar !== null)
+                                .map(subDep => ({
+                                    value: subDep.codSubDepar!,
+                                    label: `${subDep.codSubDepar?.substring(4)} - ${subDep.nombre || ''}`
+                                }))
+                            }
+                            value={subdepartamentos
+                                .filter(subDep => subDep.codSubDepar !== null && selectedCubos.includes(subDep.codSubDepar!))
+                                .map(subDep => ({
+                                    value: subDep.codSubDepar!,
+                                    label: `${subDep.codSubDepar?.substring(4)} - ${subDep.nombre || ''}`
+                                }))
+                            }
+                            onChange={(opts) => setSelectedCubos(opts ? (opts as any[]).map(v => v.value) : [])}
+                            placeholder="Seleccionar cubos..."
+                            noOptionsMessage={() => "No hay opciones"}
+                            menuPortalTarget={document.body}
+                            styles={selectStyles}
+                        />
+                    </div>
+
+                    {/* Estado Plazo */}
+                    <div>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Estado (Plazo)</label>
+                        <select className="form-select form-select-sm" value={selectedEstadoPlazo} onChange={(e) => setSelectedEstadoPlazo(e.target.value)} style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}>
+                            <option value="todos" style={{ color: 'black' }}>Todos</option>
+                            <option value="Cumplido en plazo" style={{ color: 'black' }}>Cumplido en plazo</option>
+                            <option value="Cumplido fuera de plazo" style={{ color: 'black' }}>Cumplido fuera de plazo</option>
+                        </select>
                     </div>
 
                     {/* Tipo de Fecha */}
@@ -835,12 +924,7 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                     </div>
                 </div>
 
-                {/* Footer del drawer */}
-                <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.15)', display: 'flex', gap: '10px', flexShrink: 0 }}>
-                    <button className="btn btn-sm flex-grow-1" onClick={limpiarFiltros} style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600' }}>
-                        <i className="bi bi-arrow-clockwise me-1"></i> Limpiar filtros
-                    </button>
-                </div>
+
             </div>
 
             <div className="p-4 flex-grow-1">
@@ -953,12 +1037,21 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
 
                                     <th
                                         className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('departamento')}
+                                        onClick={() => handleSort('linea')}
                                         style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
                                         onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
                                         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
                                     >
-                                        Departamento {getSortIcon('departamento')}
+                                        Línea {getSortIcon('linea')}
+                                    </th>
+                                    <th
+                                        className="cursor-pointer user-select-none"
+                                        onClick={() => handleSort('cubo')}
+                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
+                                    >
+                                        Cubo {getSortIcon('cubo')}
                                     </th>
                                     <th
                                         className="cursor-pointer user-select-none"
@@ -1057,6 +1150,7 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
 
                                         const hitoInfo = hitos.find(h => h.id === cumplimiento.hito_id);
 
+
                                         return (
                                             <tr
                                                 key={cumplimiento.id}
@@ -1106,7 +1200,10 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
                                                     </span>
                                                 </td>
                                                 <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle' }}>
-                                                    {cumplimiento.codSubDepar?.substring(4)} - {cumplimiento.departamento || '-'}
+                                                    {cumplimiento.departamento || '-'}
+                                                </td>
+                                                <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                                                    {cumplimiento.codSubDepar ? cumplimiento.codSubDepar.substring(4) : '-'}
                                                 </td>
                                                 <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle' }}>
                                                     <span style={{ backgroundColor: atisaStyles.colors.light, padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500' }}>

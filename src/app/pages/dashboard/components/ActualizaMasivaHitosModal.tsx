@@ -7,6 +7,8 @@ import { getClientesPorHito, Cliente } from '../../../api/clientes'
 import { updateMasivoHitos } from '../../../api/clienteProcesoHitos'
 import { atisaStyles, getTableHeaderStyles, getTableCellStyles } from '../../../styles/atisaStyles'
 import SharedPagination from '../../../components/pagination/SharedPagination'
+import { useAuth } from '../../../modules/auth'
+import { MOTIVOS_AUDITORIA, MotivoAuditoria } from '../../../api/auditoriaCalendarios'
 
 type Props = {
     show: boolean
@@ -26,6 +28,8 @@ const ActualizaMasivaHitosModal: FC<Props> = ({ show, onHide, hito, onSuccess, o
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(5)
 
+    const { currentUser, auth } = useAuth()
+
     // Ordenación
     const [sortField, setSortField] = useState<string>('razsoc')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -37,12 +41,16 @@ const ActualizaMasivaHitosModal: FC<Props> = ({ show, onHide, hito, onSuccess, o
             fecha_hasta: '',
             nueva_fecha: '',
             nueva_hora: '',
+            observaciones: '',
+            motivo: 0,
         },
         validationSchema: Yup.object({
             fecha_desde: Yup.string().required('La fecha de corte desde es obligatoria'),
             fecha_hasta: Yup.string(),
             nueva_fecha: Yup.string().required('La nueva fecha límite es obligatoria'),
             nueva_hora: Yup.string(),
+            observaciones: Yup.string(),
+            motivo: Yup.number().required('El motivo es obligatorio').min(1, 'El motivo es obligatorio').max(4),
         }),
         onSubmit: async (values) => {
             if (!hito) return
@@ -52,14 +60,33 @@ const ActualizaMasivaHitosModal: FC<Props> = ({ show, onHide, hito, onSuccess, o
             }
 
             setLoading(true)
+
+            let codSubDepar: string | undefined = undefined;
+            let currentUsername = currentUser?.username || 'Desconocido';
+            if (auth?.api_token) {
+                try {
+                    const decodedToken = JSON.parse(atob(auth.api_token.split('.')[1]));
+                    codSubDepar = decodedToken.codSubDepar;
+                    if (decodedToken.numeross) currentUsername = decodedToken.numeross;
+                    else if (decodedToken.username) currentUsername = decodedToken.username;
+                    else if (decodedToken.sub) currentUsername = decodedToken.sub;
+                } catch (error) {
+                    console.warn('Error decodificando token JWT para codSubDepar en actualización masiva:', error);
+                }
+            }
+
             try {
-                const payload = {
+                const payload: any = {
                     hito_id: hito.id,
                     empresa_ids: selectedClientes,
                     fecha_desde: values.fecha_desde,
                     fecha_hasta: values.fecha_hasta,
                     nueva_fecha: values.nueva_fecha,
-                    nueva_hora: values.nueva_hora || undefined
+                    nueva_hora: values.nueva_hora || undefined,
+                    usuario: currentUsername,
+                    observaciones: values.observaciones || undefined,
+                    codSubDepar: codSubDepar,
+                    motivo: values.motivo
                 }
 
                 await updateMasivoHitos(payload)
@@ -430,6 +457,67 @@ const ActualizaMasivaHitosModal: FC<Props> = ({ show, onHide, hito, onSuccess, o
                                     </div>
                                     {formik.touched.nueva_hora && formik.errors.nueva_hora && (
                                         <div className='mt-1 fs-7' style={{ color: atisaStyles.colors.error }}>{formik.errors.nueva_hora}</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="separator separator-dashed my-5"></div>
+
+                            {/* Motivo de Auditoría */}
+                            <div className='row g-5'>
+                                <div className="col-12 fv-row position-relative">
+                                    <label
+                                        className='required fw-bold fs-6 mb-2'
+                                        style={{ fontFamily: atisaStyles.fonts.primary, color: atisaStyles.colors.primary }}
+                                    >
+                                        Motivo de modificación
+                                    </label>
+                                    <div className="position-relative">
+                                        <i className="bi bi-flag position-absolute top-50 start-0 translate-middle-y ms-3" style={{ color: atisaStyles.colors.primary }}></i>
+                                        <select
+                                            className='form-select form-select-solid ps-10'
+                                            name="motivo"
+                                            value={formik.values.motivo}
+                                            onChange={formik.handleChange}
+                                            style={{ height: '42px', borderRadius: '8px' }}
+                                        >
+                                            <option value={0} disabled>Seleccione un motivo...</option>
+                                            {MOTIVOS_AUDITORIA.map((m) => (
+                                                <option key={m.id} value={m.id}>
+                                                    {m.id}. {m.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {formik.touched.motivo && formik.errors.motivo && (
+                                        <div className='mt-1 fs-7' style={{ color: atisaStyles.colors.error }}>{formik.errors.motivo}</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="separator separator-dashed my-5"></div>
+
+                            <div className='row g-5'>
+                                <div className='col-12 fv-row'>
+                                    <label
+                                        className='fw-bold fs-6 mb-2'
+                                        style={{ fontFamily: atisaStyles.fonts.primary, color: atisaStyles.colors.primary }}
+                                    >
+                                        Observaciones <span className="text-muted fw-normal fs-7">(Opcional)</span>
+                                    </label>
+                                    <div className="position-relative">
+                                        <i className="bi bi-chat-text position-absolute top-50 start-0 translate-middle-y ms-3 mb-4" style={{ color: atisaStyles.colors.primary }}></i>
+                                        <textarea
+                                            className='form-control form-control-solid ps-10'
+                                            placeholder='Motivo del cambio...'
+                                            value={formik.values.observaciones}
+                                            onChange={formik.handleChange}
+                                            name="observaciones"
+                                            style={{ borderRadius: '8px', minHeight: '42px', height: '42px' }}
+                                        />
+                                    </div>
+                                    {formik.touched.observaciones && formik.errors.observaciones && (
+                                        <div className='mt-1 fs-7' style={{ color: atisaStyles.colors.error }}>{formik.errors.observaciones}</div>
                                     )}
                                 </div>
                             </div>

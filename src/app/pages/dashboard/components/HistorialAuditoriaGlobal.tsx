@@ -8,6 +8,7 @@ import { getAllSubdepartamentos, Subdepartamento } from '../../../api/subdeparta
 import Select from 'react-select'
 import { KTCard, KTCardBody } from '../../../../_metronic/helpers'
 import { atisaStyles, getSecondaryButtonStyles, getTableHeaderStyles, getTableCellStyles } from '../../../styles/atisaStyles'
+import { formatDateDisplay, formatDateTimeDisplay } from '../../../utils/dateFormatter'
 import SharedPagination from '../../../components/pagination/SharedPagination'
 import { useNavigate } from 'react-router-dom'
 
@@ -127,26 +128,18 @@ export const HistorialAuditoriaGlobal: FC = () => {
     }
 
     const formatDate = (date: string) => {
-        if (!date) return '-'
-        const d = new Date(date)
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
+        return formatDateTimeDisplay(date)
     }
 
     const getCuboString = (item: AuditoriaCalendario) => item.codSubDepar ? `${item.codSubDepar.substring(4)} - ${item.nombre_subdepar || '-'}` : (item.nombre_subdepar || '-')
     const getValorAnterior = (item: AuditoriaCalendario) => {
-        if (item.campo_modificado === 'fecha_limite') return item.fecha_limite_anterior || item.valor_anterior || '-'
+        if (item.campo_modificado === 'fecha_limite' || item.campo_modificado === 'fecha_fin') return formatDateDisplay(item.fecha_limite_anterior || item.valor_anterior)
         const val = item.valor_anterior || '-'
         if (item.campo_modificado === 'hora_limite' && val !== '-' && val.length >= 5) return val.substring(0, 5)
         return val
     }
     const getValorActual = (item: AuditoriaCalendario) => {
-        if (item.campo_modificado === 'fecha_limite') return item.fecha_limite_actual || item.valor_nuevo || '-'
+        if (item.campo_modificado === 'fecha_limite' || item.campo_modificado === 'fecha_fin') return formatDateDisplay(item.fecha_limite_actual || item.valor_nuevo)
         const val = item.valor_nuevo || '-'
         if (item.campo_modificado === 'hora_limite' && val !== '-' && val.length >= 5) return val.substring(0, 5)
         return val
@@ -378,45 +371,96 @@ export const HistorialAuditoriaGlobal: FC = () => {
                             className="header-actions"
                             style={{
                                 display: 'flex',
-                                gap: '8px',
+                                gap: '12px',
                                 alignItems: 'center',
                                 flexWrap: 'wrap',
                                 justifyContent: 'flex-end'
                             }}
                         >
                             {activeFiltersCount > 0 && (
-                                <span style={{
-                                    backgroundColor: '#f1416c',
-                                    color: 'white',
-                                    borderRadius: '12px',
-                                    padding: '2px 10px',
-                                    fontSize: '12px',
-                                    fontWeight: '700'
-                                }}>
-                                    {activeFiltersCount}
-                                </span>
+                                <button
+                                    className="btn btn-sm me-2"
+                                    onClick={clearFilters}
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                        color: 'white',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                        borderRadius: '8px',
+                                        fontFamily: atisaStyles.fonts.secondary,
+                                        fontWeight: '600',
+                                        padding: '8px 16px',
+                                        fontSize: '14px',
+                                        transition: 'all 0.3s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+                                        e.currentTarget.style.transform = 'translateY(-1px)'
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
+                                        e.currentTarget.style.transform = 'translateY(0)'
+                                    }}
+                                >
+                                    <i className="bi bi-x-circle" style={{ color: 'white' }}></i>
+                                    Limpiar Filtros
+                                </button>
                             )}
-                            <button
-                                className="btn btn-sm"
-                                onClick={() => setShowFilters(!showFilters)}
-                                style={{
-                                    backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '8px 16px',
-                                    fontSize: '14px',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                <i className="bi bi-funnel" style={{ color: 'white' }}></i>
-                                Filtros
-                            </button>
+                            <div style={{ position: 'relative' }}>
+                                <button
+                                    className="btn btn-sm"
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    style={{
+                                        backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+                                        color: 'white',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                                        borderRadius: '8px',
+                                        fontFamily: atisaStyles.fonts.secondary,
+                                        fontWeight: '600',
+                                        padding: '8px 16px',
+                                        fontSize: '14px',
+                                        transition: 'all 0.3s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+                                        e.currentTarget.style.transform = 'translateY(-1px)'
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)'
+                                        e.currentTarget.style.transform = 'translateY(0)'
+                                    }}
+                                >
+                                    <i className="bi bi-funnel" style={{ color: 'white' }}></i>
+                                    Filtros
+                                </button>
+                                {activeFiltersCount > 0 && (
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '-8px',
+                                        right: '-8px',
+                                        backgroundColor: '#f1416c',
+                                        color: 'white',
+                                        borderRadius: '50%',
+                                        width: '20px',
+                                        height: '20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '11px',
+                                        fontWeight: 'bold',
+                                        border: '2px solid #007b8a',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                        zIndex: 1
+                                    }}>
+                                        {activeFiltersCount}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -521,27 +565,48 @@ export const HistorialAuditoriaGlobal: FC = () => {
                             {/* Cliente */}
                             <div>
                                 <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cliente</label>
-                                <select
-                                    id='filter-cliente-auditoria'
-                                    className="form-select form-select-sm"
-                                    value={clienteFiltro}
-                                    onChange={(e) => setClienteFiltro(e.target.value)}
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
-                                >
-                                    <option value="" style={{ color: 'black' }}>Todos los clientes</option>
-                                    {Array.from(new Map(auditoria.filter(a => a.cliente_id && a.cliente_nombre).map(a => [a.cliente_id, a.cliente_nombre])).entries())
+                                <Select
+                                    options={Array.from(new Map(auditoria.filter(a => a.cliente_id && a.cliente_nombre).map(a => [a.cliente_id, a.cliente_nombre])).entries())
                                         .sort((a, b) => (a[1] || '').localeCompare(b[1] || '', 'es'))
-                                        .map(([id, nombre]) => (
-                                            <option key={id} value={id} style={{ color: 'black' }}>{nombre}</option>
-                                        ))
+                                        .map(([id, nombre]) => ({ value: id, label: nombre }))
                                     }
-                                </select>
+                                    value={clienteFiltro ? { value: clienteFiltro, label: auditoria.find(a => a.cliente_id === clienteFiltro)?.cliente_nombre || clienteFiltro } : null}
+                                    onChange={(opt: any) => setClienteFiltro(opt ? opt.value : '')}
+                                    isClearable
+                                    placeholder="Seleccionar cliente..."
+                                    menuPortalTarget={document.body}
+                                    styles={{
+                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                        control: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                            borderColor: 'rgba(255, 255, 255, 0.25)',
+                                            color: 'white',
+                                            minHeight: '36px',
+                                            borderRadius: '8px'
+                                        }),
+                                        menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+                                            color: atisaStyles.colors.dark,
+                                            cursor: 'pointer',
+                                            fontSize: '13px'
+                                        }),
+                                        placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
+                                        input: (base) => ({ ...base, color: 'white' }),
+                                        singleValue: (base) => ({ ...base, color: 'white' }),
+                                        indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
+                                    }}
+                                />
                             </div>
 
                             {/* Fechas de actualización */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <div>
-                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Rango / Desde</label>
+                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Creación Desde</label>
                                     <input
                                         type="date"
                                         className="form-control form-control-sm"
@@ -551,7 +616,7 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Hasta</label>
+                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Creación Hasta</label>
                                     <input
                                         type="date"
                                         className="form-control form-control-sm"
@@ -564,7 +629,7 @@ export const HistorialAuditoriaGlobal: FC = () => {
 
                             {/* Línea / Cubo */}
                             <div>
-                                <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubo</label>
+                                <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubo / Línea</label>
                                 <Select
                                     isMulti
                                     options={subdepartamentos.map((subdep) => ({
@@ -599,17 +664,17 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                             backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
                                             color: atisaStyles.colors.dark,
                                             cursor: 'pointer',
-                                            ':active': { backgroundColor: atisaStyles.colors.secondary }
+                                            fontSize: '13px'
                                         }),
-                                        multiValue: (base) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
-                                        multiValueLabel: (base) => ({ ...base, color: 'white', fontSize: '12px' }),
-                                        multiValueRemove: (base) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
                                         placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
                                         input: (base) => ({ ...base, color: 'white' }),
                                         singleValue: (base) => ({ ...base, color: 'white' }),
                                         indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
-                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } }),
-                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } })
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        multiValue: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.15)', borderRadius: '4px' }),
+                                        multiValueLabel: (base) => ({ ...base, color: 'white' }),
+                                        multiValueRemove: (base) => ({ ...base, color: 'white', ':hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' } })
                                     }}
                                 />
                             </div>
@@ -617,33 +682,77 @@ export const HistorialAuditoriaGlobal: FC = () => {
                             {/* Proceso */}
                             <div>
                                 <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Proceso</label>
-                                <select
-                                    className="form-select form-select-sm"
-                                    value={procesoFiltro}
-                                    onChange={(e) => setProcesoFiltro(e.target.value)}
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
-                                >
-                                    <option value="" style={{ color: 'black' }}>Todos los procesos</option>
-                                    {procesosCliente.map(p => (
-                                        <option key={p.id} value={p.nombre} style={{ color: 'black' }}>{p.nombre}</option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={procesosCliente.map(p => ({ value: p.nombre, label: p.nombre }))}
+                                    value={procesoFiltro ? { value: procesoFiltro, label: procesoFiltro } : null}
+                                    onChange={(opt: any) => setProcesoFiltro(opt ? opt.value : '')}
+                                    isClearable
+                                    placeholder="Seleccionar proceso..."
+                                    menuPortalTarget={document.body}
+                                    styles={{
+                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                        control: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                            borderColor: 'rgba(255, 255, 255, 0.25)',
+                                            color: 'white',
+                                            minHeight: '36px',
+                                            borderRadius: '8px'
+                                        }),
+                                        menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+                                            color: atisaStyles.colors.dark,
+                                            cursor: 'pointer',
+                                            fontSize: '13px'
+                                        }),
+                                        placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
+                                        input: (base) => ({ ...base, color: 'white' }),
+                                        singleValue: (base) => ({ ...base, color: 'white' }),
+                                        indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
+                                    }}
+                                />
                             </div>
 
                             {/* Hito */}
                             <div>
                                 <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Hito</label>
-                                <select
-                                    className="form-select form-select-sm"
-                                    value={hitoFiltro}
-                                    onChange={(e) => setHitoFiltro(e.target.value)}
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
-                                >
-                                    <option value="" style={{ color: 'black' }}>Todos los hitos</option>
-                                    {hitosCliente.map(h => (
-                                        <option key={h.id} value={h.nombre} style={{ color: 'black' }}>{h.nombre}</option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={hitosCliente.map(h => ({ value: h.nombre, label: h.nombre }))}
+                                    value={hitoFiltro ? { value: hitoFiltro, label: hitoFiltro } : null}
+                                    onChange={(opt: any) => setHitoFiltro(opt ? opt.value : '')}
+                                    isClearable
+                                    placeholder="Seleccionar hito..."
+                                    menuPortalTarget={document.body}
+                                    styles={{
+                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                        control: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                            borderColor: 'rgba(255, 255, 255, 0.25)',
+                                            color: 'white',
+                                            minHeight: '36px',
+                                            borderRadius: '8px'
+                                        }),
+                                        menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+                                            color: atisaStyles.colors.dark,
+                                            cursor: 'pointer',
+                                            fontSize: '13px'
+                                        }),
+                                        placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
+                                        input: (base) => ({ ...base, color: 'white' }),
+                                        singleValue: (base) => ({ ...base, color: 'white' }),
+                                        indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
+                                    }}
+                                />
                             </div>
 
                             {/* Crítico / Obligatorio */}
@@ -754,15 +863,12 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                             menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                                             control: (base) => ({
                                                 ...base,
-                                                backgroundColor: 'rgba(255,255,255,0.12)',
-                                                borderColor: 'rgba(255,255,255,0.25)',
+                                                backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                                borderColor: 'rgba(255, 255, 255, 0.25)',
                                                 color: 'white',
-                                                borderRadius: '8px',
-                                                minHeight: '34px',
-                                                height: '34px'
+                                                minHeight: '36px',
+                                                borderRadius: '8px'
                                             }),
-                                            valueContainer: (base) => ({ ...base, height: '34px', padding: '0 8px' }),
-                                            indicatorsContainer: (base) => ({ ...base, height: '34px' }),
                                             menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
                                             option: (base, state) => ({
                                                 ...base,
@@ -771,10 +877,12 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                                 cursor: 'pointer',
                                                 fontSize: '13px'
                                             }),
-                                            placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '12px' }),
-                                            singleValue: (base) => ({ ...base, color: 'white', fontSize: '13px' }),
+                                            placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
                                             input: (base) => ({ ...base, color: 'white' }),
-                                            clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } })
+                                            singleValue: (base) => ({ ...base, color: 'white' }),
+                                            indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                            dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                            clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
                                         }}
                                     />
                                 </div>
@@ -791,15 +899,12 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                             menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                                             control: (base) => ({
                                                 ...base,
-                                                backgroundColor: 'rgba(255,255,255,0.12)',
-                                                borderColor: 'rgba(255,255,255,0.25)',
+                                                backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                                borderColor: 'rgba(255, 255, 255, 0.25)',
                                                 color: 'white',
-                                                borderRadius: '8px',
-                                                minHeight: '34px',
-                                                height: '34px'
+                                                minHeight: '36px',
+                                                borderRadius: '8px'
                                             }),
-                                            valueContainer: (base) => ({ ...base, height: '34px', padding: '0 8px' }),
-                                            indicatorsContainer: (base) => ({ ...base, height: '34px' }),
                                             menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
                                             option: (base, state) => ({
                                                 ...base,
@@ -808,10 +913,12 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                                 cursor: 'pointer',
                                                 fontSize: '13px'
                                             }),
-                                            placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '12px' }),
-                                            singleValue: (base) => ({ ...base, color: 'white', fontSize: '13px' }),
+                                            placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
                                             input: (base) => ({ ...base, color: 'white' }),
-                                            clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } })
+                                            singleValue: (base) => ({ ...base, color: 'white' }),
+                                            indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                            dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                            clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
                                         }}
                                     />
                                 </div>
@@ -831,15 +938,12 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                         menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                                         control: (base) => ({
                                             ...base,
-                                            backgroundColor: 'rgba(255,255,255,0.12)',
-                                            borderColor: 'rgba(255,255,255,0.25)',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                            borderColor: 'rgba(255, 255, 255, 0.25)',
                                             color: 'white',
-                                            borderRadius: '8px',
-                                            minHeight: '34px',
-                                            height: '34px'
+                                            minHeight: '36px',
+                                            borderRadius: '8px'
                                         }),
-                                        valueContainer: (base) => ({ ...base, height: '34px', padding: '0 8px' }),
-                                        indicatorsContainer: (base) => ({ ...base, height: '34px' }),
                                         menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
                                         option: (base, state) => ({
                                             ...base,
@@ -848,10 +952,12 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                             cursor: 'pointer',
                                             fontSize: '13px'
                                         }),
-                                        placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '12px' }),
-                                        singleValue: (base) => ({ ...base, color: 'white', fontSize: '13px' }),
+                                        placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
                                         input: (base) => ({ ...base, color: 'white' }),
-                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', ':hover': { color: 'white' } })
+                                        singleValue: (base) => ({ ...base, color: 'white' }),
+                                        indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
                                     }}
                                 />
                             </div>
@@ -949,6 +1055,7 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                         }}
                                     >
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('cliente_id')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Cliente {getSortIcon('cliente_id')}</th>
+                                        <th className='cursor-pointer user-select-none' onClick={() => handleSort('nombre_subdepar')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Línea {getSortIcon('nombre_subdepar')}</th>
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('cubo')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Cubo {getSortIcon('cubo')}</th>
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('proceso')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Proceso {getSortIcon('proceso')}</th>
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('hito')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Hito {getSortIcon('hito')}</th>
@@ -984,7 +1091,8 @@ export const HistorialAuditoriaGlobal: FC = () => {
                                             <td style={{ ...getTableCellStyles(), fontWeight: '600', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.cliente_nombre || item.cliente_id}>
                                                 {item.cliente_nombre || item.cliente_id || '-'}
                                             </td>
-                                            <td style={{ ...getTableCellStyles(), fontWeight: '600' }}>{getCuboString(item)}</td>
+                                            <td style={{ ...getTableCellStyles(), fontWeight: '500' }}>{item.nombre_subdepar || '-'}</td>
+                                            <td style={{ ...getTableCellStyles(), fontWeight: '600' }}>{item.codSubDepar ? item.codSubDepar.substring(4) : '-'}</td>
                                             <td style={getTableCellStyles()}>
                                                 <div style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '500' }} title={item.proceso_nombre}>
                                                     {item.proceso_nombre}

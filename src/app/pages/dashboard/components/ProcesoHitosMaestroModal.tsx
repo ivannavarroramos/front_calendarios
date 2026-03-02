@@ -6,6 +6,7 @@ import { Proceso } from '../../../api/procesos'
 import { Hito, getHitosHabilitados } from '../../../api/hitos'
 import SharedPagination from '../../../components/pagination/SharedPagination'
 import { atisaStyles, getTableHeaderStyles, getTableCellStyles } from '../../../styles/atisaStyles'
+import { formatDateDisplay } from '../../../utils/dateFormatter'
 
 interface Props {
   show: boolean
@@ -618,7 +619,7 @@ const ProcesoHitosMaestroModal: FC<Props> = ({
                         <td
                           style={{ ...getTableCellStyles(), borderBottom: `1px solid ${atisaStyles.colors.light}` }}
                         >
-                          {hito.fecha_limite ? new Date(hito.fecha_limite).toLocaleDateString() : '-'}
+                          {formatDateDisplay(hito.fecha_limite)}
                         </td>
                         <td
                           style={{ ...getTableCellStyles(), borderBottom: `1px solid ${atisaStyles.colors.light}` }}

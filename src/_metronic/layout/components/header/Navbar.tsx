@@ -1,10 +1,12 @@
 import clsx from 'clsx'
-import {KTIcon, toAbsoluteUrl} from '../../../helpers'
-import {HeaderNotificationsMenu, HeaderUserMenu, Search, ThemeModeSwitcher} from '../../../partials'
-import {useLayout} from '../../core'
+import { KTIcon, toAbsoluteUrl } from '../../../helpers'
+import { HeaderNotificationsMenu, HeaderUserMenu, Search, ThemeModeSwitcher } from '../../../partials'
+import { useLayout } from '../../core'
 import { atisaStyles } from '../../../../app/styles/atisaStyles'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../../../app/modules/auth'
+import { Bot, X } from 'lucide-react'
+import DocumentSearchChat from '../../../../app/components/DocumentSearchChat'
 
 const itemClass = 'ms-1 ms-md-4'
 const btnClass =
@@ -13,9 +15,10 @@ const userAvatarClass = 'symbol-35px'
 const btnIconClass = 'fs-2'
 
 const Navbar = () => {
-  const {config} = useLayout()
-  const {currentUser, logout} = useAuth()
+  const { config } = useLayout()
+  const { currentUser, logout } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Cerrar menú al hacer click fuera
@@ -43,50 +46,109 @@ const Navbar = () => {
     >
       {/* Contenedor principal del navbar */}
       <div className='d-flex align-items-center justify-content-end w-100 px-4 py-2'>
-        {/* Información de la empresa */}
-        <div className='d-flex align-items-center me-auto'>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              backgroundColor: atisaStyles.colors.primary,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: '12px',
-              boxShadow: '0 4px 12px rgba(0, 80, 92, 0.2)'
-            }}
-          >
-            <i
-              className="bi bi-calendar-check"
-              style={{
-                fontSize: '20px',
-                color: 'white'
-              }}
-            ></i>
-          </div>
-          <div>
+        {/* Chat RAG + Información de la empresa */}
+        <div className='d-flex align-items-center me-auto' style={{ gap: '15px' }}>
+
+          {/* Botón Chat RAG */}
+          <div style={{ position: 'relative' }}>
             <div
+              id="rag-chat-toggle-btn"
+              onClick={() => setIsChatOpen(!isChatOpen)}
               style={{
-                fontFamily: atisaStyles.fonts.primary,
-                color: atisaStyles.colors.primary,
-                fontWeight: 'bold',
-                fontSize: '16px',
-                margin: 0
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: isChatOpen ? atisaStyles.colors.primary : 'white',
+                border: `1px solid ${atisaStyles.colors.primary}`,
+                color: isChatOpen ? 'white' : atisaStyles.colors.primary,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 2px 8px rgba(0, 80, 92, 0.1)',
+                fontWeight: '600',
+                fontSize: '13px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
+                e.currentTarget.style.color = 'white'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = isChatOpen ? atisaStyles.colors.primary : 'white'
+                e.currentTarget.style.color = isChatOpen ? 'white' : atisaStyles.colors.primary
               }}
             >
-              ATISA GESTIÓN
+              {isChatOpen ? <X size={16} /> : <Bot size={16} />}
+              Chat Documental
             </div>
+
+            {isChatOpen && (
+              <div
+                id="rag-chat-window"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: '0',
+                  marginTop: '10px',
+                  width: '400px',
+                  height: '600px',
+                  boxShadow: '0 10px 30px rgba(0, 80, 92, 0.15)',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  backgroundColor: '#fff',
+                  zIndex: 9999
+                }}
+                className="animate-slide-down"
+              >
+                <DocumentSearchChat />
+              </div>
+            )}
+          </div>
+
+          <div className='d-flex align-items-center'>
             <div
               style={{
-                fontFamily: atisaStyles.fonts.secondary,
-                color: atisaStyles.colors.dark,
-                fontSize: '12px',
-                margin: 0
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                backgroundColor: atisaStyles.colors.primary,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '12px',
+                boxShadow: '0 4px 12px rgba(0, 80, 92, 0.2)'
               }}
             >
-              Calendario / Documental
+              <i
+                className="bi bi-calendar-check"
+                style={{
+                  fontSize: '20px',
+                  color: 'white'
+                }}
+              ></i>
+            </div>
+            <div>
+              <div
+                style={{
+                  fontFamily: atisaStyles.fonts.primary,
+                  color: atisaStyles.colors.primary,
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  margin: 0
+                }}
+              >
+                ATISA GESTIÓN
+              </div>
+              <div
+                style={{
+                  fontFamily: atisaStyles.fonts.secondary,
+                  color: atisaStyles.colors.dark,
+                  fontSize: '12px',
+                  margin: 0
+                }}
+              >
+                Calendario / Documental
+              </div>
             </div>
           </div>
         </div>
@@ -254,4 +316,4 @@ const Navbar = () => {
   )
 }
 
-export {Navbar}
+export { Navbar }

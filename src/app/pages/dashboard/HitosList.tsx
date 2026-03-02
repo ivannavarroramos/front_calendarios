@@ -9,6 +9,7 @@ import { Hito, getAllHitos, createHito, updateHito, deleteHito } from '../../api
 import { deshabilitarHitosPorHitoDesde, deleteProcesoHitosByHito } from '../../api/clienteProcesoHitos'
 import SharedPagination from '../../components/pagination/SharedPagination'
 import { atisaStyles } from '../../styles/atisaStyles'
+import { formatDateDisplay } from '../../utils/dateFormatter'
 
 const HitosList: FC = () => {
   const navigate = useNavigate()
@@ -1011,7 +1012,7 @@ const HitosList: FC = () => {
                             borderLeft: 'none',
                             borderRight: 'none'
                           }}>
-                            {hito.fecha_limite ? new Date(hito.fecha_limite).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                            {formatDateDisplay(hito.fecha_limite)}
                           </td>
                           <td style={{
                             padding: '12px 8px',

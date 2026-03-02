@@ -2,6 +2,7 @@ import { FC, useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Select from 'react-select'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../../styles/atisaStyles'
+import { formatDateDisplay, formatDateTimeDisplay } from '../../../../utils/dateFormatter'
 import SharedPagination from '../../../../components/pagination/SharedPagination'
 import { Cliente, getClienteById } from '../../../../api/clientes'
 import { ClienteProcesoHitoCumplimiento } from '../../../../api/clienteProcesoHitoCumplimientos'
@@ -44,7 +45,7 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
     const [fechaDesde, setFechaDesde] = useState(getTodayDate())
     const [fechaHasta, setFechaHasta] = useState('')
     const [showFilters, setShowFilters] = useState(false)
-    const [sortField, setSortField] = useState<'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'tipo' | 'departamento' | 'estado_proceso' | 'critico' | 'usuario' | 'observacion'>('fecha_limite')
+    const [sortField, setSortField] = useState<'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'tipo' | 'linea' | 'estado_proceso' | 'critico' | 'usuario' | 'observacion' | 'cubo'>('fecha_limite')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
     const [cumplimientosPorHito, setCumplimientosPorHito] = useState<Record<number, ClienteProcesoHitoCumplimiento[]>>({})
 
@@ -114,21 +115,11 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
     }, [clienteId])
 
     const formatDate = (date: string) => {
-        if (!date) return '-'
-        const d = new Date(date)
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        })
+        return formatDateDisplay(date)
     }
 
     const formatDateTime = (dateStr: string) => {
-        if (!dateStr) return '-'
-        const d = new Date(dateStr)
-        if (isNaN(d.getTime())) return '-'
-        return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
-            d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+        return formatDateTimeDisplay(dateStr)
     }
 
     const formatTime = (time: string | null) => {
@@ -320,7 +311,7 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
     }
 
     // Función para manejar el ordenamiento
-    const handleSort = (field: 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'tipo' | 'departamento' | 'estado_proceso' | 'critico' | 'usuario' | 'observacion') => {
+    const handleSort = (field: 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'tipo' | 'linea' | 'estado_proceso' | 'critico' | 'usuario' | 'observacion' | 'cubo') => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
         } else {
@@ -330,7 +321,7 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
     }
 
     // Función para obtener el icono de ordenamiento
-    const getSortIcon = (field: 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'tipo' | 'departamento' | 'estado_proceso' | 'critico' | 'usuario' | 'observacion') => {
+    const getSortIcon = (field: 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'tipo' | 'linea' | 'estado_proceso' | 'critico' | 'usuario' | 'observacion' | 'cubo') => {
         if (sortField !== field) {
             return (
                 <i
@@ -398,6 +389,18 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
                     const fechaEstA = a.fecha_estado ? new Date(a.fecha_estado).getTime() : 0
                     const fechaEstB = b.fecha_estado ? new Date(b.fecha_estado).getTime() : 0
                     comparison = fechaEstA - fechaEstB
+                    break
+
+                case 'cubo':
+                    const cuboA = (a.ultimo_cumplimiento?.codSubDepar || a.codSubDepar || '').substring(4)
+                    const cuboB = (b.ultimo_cumplimiento?.codSubDepar || b.codSubDepar || '').substring(4)
+                    comparison = cuboA.localeCompare(cuboB, 'es', { sensitivity: 'base', numeric: true })
+                    break
+
+                case 'linea':
+                    const linA = a.ultimo_cumplimiento?.departamento || a.departamento_cliente || a.departamento || ''
+                    const linB = b.ultimo_cumplimiento?.departamento || b.departamento_cliente || b.departamento || ''
+                    comparison = linA.localeCompare(linB, 'es', { sensitivity: 'base' })
                     break
 
                 case 'tipo':
@@ -740,37 +743,38 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
                     overflowY: 'auto'
                 }}
             >
-                {/* Cabecera */}
-                <div style={{
-                    padding: '20px 24px',
-                    borderBottom: '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexShrink: 0
-                }}>
+                {/* Cabecera del drawer */}
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <i className="bi bi-funnel-fill" style={{ color: 'white', fontSize: '18px' }}></i>
                         <span style={{ color: 'white', fontFamily: atisaStyles.fonts.primary, fontWeight: '700', fontSize: '1.2rem' }}>Filtros</span>
                     </div>
-                    <button
-                        onClick={() => setShowFilters(false)}
-                        style={{
-                            background: 'rgba(255,255,255,0.15)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            borderRadius: '8px',
-                            color: 'white',
-                            width: '36px',
-                            height: '36px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            fontSize: '18px'
-                        }}
-                    >
-                        <i className="bi bi-x"></i>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                            className="btn btn-sm"
+                            onClick={exportarExcel}
+                            disabled={exporting}
+                            title="Exportar Excel"
+                            style={{ color: 'white', backgroundColor: '#50cd89', borderColor: '#50cd89', fontWeight: '600', padding: '6px 12px', opacity: exporting ? 0.7 : 1 }}
+                        >
+                            {exporting ? (
+                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            ) : (
+                                <i className="bi bi-file-earmark-excel"></i>
+                            )}
+                        </button>
+                        <button
+                            className="btn btn-sm"
+                            onClick={limpiarFiltros}
+                            title="Limpiar filtros"
+                            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600', padding: '6px 12px' }}
+                        >
+                            <i className="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button onClick={() => setShowFilters(false)} title="Cerrar" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: 'white', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>
+                            <i className="bi bi-x"></i>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Contenido */}
@@ -932,35 +936,6 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div style={{
-                    padding: '16px 24px',
-                    borderTop: '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    gap: '10px',
-                    flexShrink: 0
-                }}>
-                    <button
-                        className="btn btn-sm"
-                        onClick={exportarExcel}
-                        disabled={exporting}
-                        style={{ color: 'white', backgroundColor: '#50cd89', borderColor: '#50cd89', fontWeight: '600', flex: 1, opacity: exporting ? 0.7 : 1 }}
-                    >
-                        {exporting ? (
-                            <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                        ) : (
-                            <i className="bi bi-file-earmark-excel me-1"></i>
-                        )}
-                        Exportar Excel
-                    </button>
-                    <button
-                        className="btn btn-sm"
-                        onClick={limpiarFiltros}
-                        style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600', flex: 1 }}
-                    >
-                        <i className="bi bi-arrow-clockwise me-1"></i> Limpiar
-                    </button>
-                </div>
             </div>
 
             <div className="p-4 flex-grow-1">
@@ -1007,8 +982,11 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
                         >
                             <thead style={{ position: 'sticky', top: 0, zIndex: 2 }}>
                                 <tr style={{ backgroundColor: atisaStyles.colors.primary, color: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                                    <th className="cursor-pointer user-select-none" onClick={() => handleSort('departamento')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
-                                        Cubo {getSortIcon('departamento')}
+                                    <th className="cursor-pointer user-select-none" onClick={() => handleSort('linea')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
+                                        Línea {getSortIcon('linea')}
+                                    </th>
+                                    <th className="cursor-pointer user-select-none" onClick={() => handleSort('cubo')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
+                                        Cubo {getSortIcon('cubo')}
                                     </th>
                                     <th className="cursor-pointer user-select-none" onClick={() => handleSort('proceso')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
                                         Proceso {getSortIcon('proceso')}
@@ -1144,11 +1122,14 @@ const StatusCliente: FC<Props> = ({ clienteId }) => {
                                                 }}
                                             >
                                                 <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>
+                                                    {hito.ultimo_cumplimiento?.departamento || hito.departamento_cliente || hito.departamento || '-'}
+                                                </td>
+                                                <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>
                                                     {hito.ultimo_cumplimiento?.codSubDepar
-                                                        ? `${hito.ultimo_cumplimiento.codSubDepar.substring(4)} - ${hito.ultimo_cumplimiento.departamento || '-'}`
+                                                        ? hito.ultimo_cumplimiento.codSubDepar.substring(4)
                                                         : hito.codSubDepar
-                                                            ? `${hito.codSubDepar.substring(4)} - ${hito.departamento_cliente || hito.departamento || '-'}`
-                                                            : hito.departamento_cliente || hito.departamento || '-'}
+                                                            ? hito.codSubDepar.substring(4)
+                                                            : '-'}
                                                 </td>
                                                 <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>
                                                     {hito.proceso_nombre || '-'}

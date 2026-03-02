@@ -10,6 +10,7 @@ import { getClienteProcesoHitoCumplimientosByHito, ClienteProcesoHitoCumplimient
 import { descargarDocumentosCumplimiento } from '../../../../api/documentosCumplimiento'
 import CumplimentarHitoModal from './CumplimentarHitoModal'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../../styles/atisaStyles'
+import { formatDateDisplay, formatDateTimeDisplay } from '../../../../utils/dateFormatter'
 
 interface Props {
   clienteId: string
@@ -71,6 +72,8 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
   const [busquedaNombre, setBusquedaNombre] = useState('')
   const [debouncedBusqueda, setDebouncedBusqueda] = useState('')
   const [filtrosActivos, setFiltrosActivos] = useState<Set<'vencido' | 'hoy' | 'mañana' | 'en_plazo' | 'cumplido_plazo' | 'cumplido_fuera'>>(new Set())
+  const [claveFiltro, setClaveFiltro] = useState('')
+  const [obligatorioFiltro, setObligatorioFiltro] = useState('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [sortField, setSortField] = useState<'hito' | 'estado' | 'fecha_actualizacion' | 'fecha_limite' | 'hora_limite' | 'responsable' | 'fecha_cumplimiento'>('fecha_limite')
@@ -329,9 +332,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
           result[hitoId] = '-'
           return
         }
-        result[hitoId] = fecha.toLocaleDateString('es-ES', {
-          day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        })
+        result[hitoId] = formatDateTimeDisplay(fecha)
       } catch {
         result[hitoId] = '-'
       }
@@ -417,23 +418,11 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
   }
 
   const formatDate = (date: string) => {
-    const d = new Date(date)
-    return d.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
+    return formatDateDisplay(date)
   }
 
   const formatDateWithTime = (date: string) => {
-    const d = new Date(date)
-    return d.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    return formatDateTimeDisplay(date)
   }
 
   const formatTime = (time: string | null) => {
@@ -487,13 +476,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
         return '-'
       }
 
-      return fecha.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+      return formatDateTimeDisplay(fecha)
     } catch (error) {
       console.warn('Error formateando fecha de cumplimiento:', error)
       return '-'
@@ -570,6 +553,8 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
 
   const activarTodos = () => {
     setFiltrosActivos(new Set())
+    setClaveFiltro('')
+    setObligatorioFiltro('')
   }
 
   // Función para limpiar filtros de fecha
@@ -628,6 +613,18 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
     } catch {
       return false
     }
+  }
+
+  // Función para filtrar por criticidad
+  const coincideCritico = (h: ClienteProcesoHito) => {
+    if (claveFiltro === '') return true
+    return String(!!h.critico) === claveFiltro
+  }
+
+  // Función para filtrar por obligatoriedad
+  const coincideObligatorio = (h: ClienteProcesoHito) => {
+    if (obligatorioFiltro === '') return true
+    return String(!!h.obligatorio) === obligatorioFiltro
   }
 
   // Determinar si fue finalizado fuera de plazo (último cumplimiento > fecha límite + hora límite)
@@ -869,7 +866,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
           {/* Columna derecha: Botones Ver Status y Ver Histórico */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center' }}>
             {/* Badge de filtros activos */}
-            {(filtrosActivos.size > 0 || fechaDesde || fechaHasta || busquedaNombre) && (
+            {(filtrosActivos.size > 0 || fechaDesde || fechaHasta || busquedaNombre || claveFiltro || obligatorioFiltro) && (
               <span style={{
                 backgroundColor: '#f1416c',
                 color: 'white',
@@ -882,7 +879,9 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
                   filtrosActivos.size,
                   fechaDesde ? 1 : 0,
                   fechaHasta ? 1 : 0,
-                  busquedaNombre ? 1 : 0
+                  busquedaNombre ? 1 : 0,
+                  claveFiltro ? 1 : 0,
+                  obligatorioFiltro ? 1 : 0
                 ].reduce((a, b) => a + b, 0)} filtros activos
               </span>
             )}
@@ -1138,37 +1137,36 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
         }}
       >
         {/* Cabecera del drawer */}
-        <div style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0
-        }}>
+        <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <i className="bi bi-funnel-fill" style={{ color: 'white', fontSize: '18px' }}></i>
             <span style={{ color: 'white', fontFamily: atisaStyles.fonts.primary, fontWeight: '700', fontSize: '1.2rem' }}>Filtros</span>
           </div>
-          <button
-            onClick={() => setShowFilters(false)}
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: '8px',
-              color: 'white',
-              width: '36px',
-              height: '36px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '18px',
-              transition: 'background 0.2s'
-            }}
-          >
-            <i className="bi bi-x"></i>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              className="btn btn-sm"
+              onClick={() => {
+                activarTodos()
+                limpiarFiltrosFecha()
+                setBusquedaNombre('')
+                setClaveFiltro('')
+                setObligatorioFiltro('')
+                setTodosAbiertos(false)
+                setActiveKeys([])
+              }}
+              title="Limpiar filtros"
+              style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600', padding: '6px 12px' }}
+            >
+              <i className="bi bi-arrow-clockwise"></i>
+            </button>
+            <button
+              onClick={() => setShowFilters(false)}
+              title="Cerrar"
+              style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: 'white', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}
+            >
+              <i className="bi bi-x"></i>
+            </button>
+          </div>
         </div>
 
         {/* Contenido del drawer */}
@@ -1192,7 +1190,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
           {/* Fechas */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Desde</label>
+              <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Límite Desde</label>
               <input
                 type="date"
                 className="form-control form-control-sm"
@@ -1202,7 +1200,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
               />
             </div>
             <div>
-              <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Hasta</label>
+              <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Límite Hasta</label>
               <input
                 type="date"
                 className="form-control form-control-sm"
@@ -1265,29 +1263,73 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
               })}
             </div>
           </div>
-        </div>
 
-        {/* Footer del drawer */}
-        <div style={{
-          padding: '16px 24px',
-          borderTop: '1px solid rgba(255,255,255,0.15)',
-          display: 'flex',
-          gap: '10px',
-          flexShrink: 0
-        }}>
-          <button
-            className="btn btn-sm w-100"
-            onClick={() => {
-              activarTodos()
-              limpiarFiltrosFecha()
-              setBusquedaNombre('')
-              setTodosAbiertos(false)
-              setActiveKeys([])
-            }}
-            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600' }}
-          >
-            <i className="bi bi-arrow-clockwise me-1"></i> Limpiar Filtros
-          </button>
+          {/* Crítico / Obligatorio */}
+          <div>
+            <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px', display: 'block' }}>Características del hito</label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                { value: '', label: 'Todos', icon: 'bi-list-ul' },
+                { value: 'true', label: 'Crítico', icon: 'bi-exclamation-triangle-fill', color: atisaStyles.colors.error },
+                { value: 'false', label: 'No crítico', icon: 'bi-check-circle', color: 'rgba(255,255,255,0.5)' },
+              ].map(opt => (
+                <div
+                  key={`crit-${opt.value}`}
+                  onClick={() => setClaveFiltro(opt.value)}
+                  style={{
+                    cursor: 'pointer',
+                    backgroundColor: claveFiltro === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
+                    color: claveFiltro === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
+                    border: `1px solid ${opt.color || 'white'}`,
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    opacity: claveFiltro === opt.value ? 1 : 0.65,
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                >
+                  <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+              {[
+                { value: '', label: 'Todos', icon: 'bi-list-ul' },
+                { value: 'true', label: 'Obligatorio', icon: 'bi-asterisk', color: atisaStyles.colors.accent },
+                { value: 'false', label: 'No obligatorio', icon: 'bi-x-circle', color: 'rgba(255,255,255,0.5)' },
+              ].map(opt => (
+                <div
+                  key={`obl-${opt.value}`}
+                  onClick={() => setObligatorioFiltro(opt.value)}
+                  style={{
+                    cursor: 'pointer',
+                    backgroundColor: obligatorioFiltro === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
+                    color: obligatorioFiltro === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
+                    border: `1px solid ${opt.color || 'white'}`,
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    opacity: obligatorioFiltro === opt.value ? 1 : 0.65,
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                >
+                  <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+
         </div>
       </div>
 
@@ -1593,7 +1635,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
                             ) : (
                               periodo.items.map((proceso) => {
                                 const hitosFiltrados = (hitosPorProceso[proceso.id] || [])
-                                  .filter((h) => coincideVencimiento(h) && coincideFechaLimite(h))
+                                  .filter((h) => coincideVencimiento(h) && coincideFechaLimite(h) && coincideCritico(h) && coincideObligatorio(h))
                                   .filter((h) => {
                                     if (!debouncedBusqueda) return true
                                     const nombre = getNombreHito(h.hito_id)

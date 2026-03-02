@@ -9,6 +9,7 @@ import { getClienteProcesoHitosByProceso, getClienteProcesoHitosHabilitadosByPro
 import { Hito, getAllHitos } from '../../../api/hitos'
 import { createAuditoriaCalendario, AuditoriaCalendarioCreate, MOTIVOS_AUDITORIA, MotivoAuditoria } from '../../../api/auditoriaCalendarios'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../styles/atisaStyles'
+import { formatDateDisplay } from '../../../utils/dateFormatter'
 
 interface Props {
   clienteId: string
@@ -550,12 +551,7 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
   }
 
   const formatDate = (date: string) => {
-    const d = new Date(date)
-    return d.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
+    return formatDateDisplay(date)
   }
 
   const formatDateForInput = (date: string) => {
@@ -2783,38 +2779,34 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
                   <i className="bi bi-flag" style={{ color: atisaStyles.colors.primary }}></i>
                   Motivo de modificación *
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {MOTIVOS_AUDITORIA.map((m) => {
-                    const isSelected = editForm.motivo === m.id
-                    const colors: Record<number, string> = {
-                      1: atisaStyles.colors.primary,
-                      2: '#009ef7',
-                      3: '#50cd89',
-                      4: '#ffc107'
-                    }
-                    const color = colors[m.id] || atisaStyles.colors.primary
-                    return (
-                      <div
-                        key={m.id}
-                        onClick={() => setEditForm({ ...editForm, motivo: m.id as MotivoAuditoria })}
-                        style={{
-                          cursor: 'pointer',
-                          backgroundColor: isSelected ? color : 'transparent',
-                          color: isSelected ? 'white' : atisaStyles.colors.dark,
-                          border: `2px solid ${color}`,
-                          padding: '6px 14px',
-                          borderRadius: '20px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          transition: 'all 0.2s ease',
-                          userSelect: 'none'
-                        }}
-                      >
-                        {m.id}. {m.label}
-                      </div>
-                    )
-                  })}
-                </div>
+                <select
+                  className="form-select"
+                  value={editForm.motivo}
+                  onChange={(e) => setEditForm({ ...editForm, motivo: parseInt(e.target.value) as MotivoAuditoria })}
+                  style={{
+                    fontFamily: atisaStyles.fonts.secondary,
+                    fontSize: '14px',
+                    border: `2px solid ${atisaStyles.colors.light}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = atisaStyles.colors.accent
+                    e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = atisaStyles.colors.light
+                    e.target.style.boxShadow = 'none'
+                  }}
+                >
+                  <option value={0} disabled>Seleccione un motivo...</option>
+                  {MOTIVOS_AUDITORIA.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.id}. {m.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Observaciones */}

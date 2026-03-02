@@ -8,23 +8,7 @@ import SharedPagination from '../../../../components/pagination/SharedPagination
 import CumplimentarHitosMasivoModal from './CumplimentarHitosMasivoModal'
 import { getAllSubdepartamentos, Subdepartamento } from '../../../../api/subdepartamentos'
 
-// Componente personalizado para opción con checkbox
-const CheckboxOption = (props: any) => {
-    return (
-        <components.Option {...props}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-                <input
-                    type="checkbox"
-                    checked={props.isSelected}
-                    onChange={() => null}
-                    style={{ marginRight: '8px' }}
-                    className="form-check-input"
-                />
-                <label>{props.label}</label>
-            </div>
-        </components.Option>
-    );
-};
+
 
 const CumplimientoMasivo: FC = () => {
     const navigate = useNavigate()
@@ -41,13 +25,14 @@ const CumplimientoMasivo: FC = () => {
     }
     const [fechaDesde, setFechaDesde] = useState<string>(getTodayDate())
     const [fechaHasta, setFechaHasta] = useState<string>('')
-    const [selectedClienteId, setSelectedClienteId] = useState<string>('')
+    const [selectedClienteIds, setSelectedClienteIds] = useState<string[]>([])
 
     // Filtros Multi-select (IDs)
     const [selectedProcesos, setSelectedProcesos] = useState<{ value: number; label: string }[]>([])
     const [selectedHitos, setSelectedHitos] = useState<{ value: number; label: string }[]>([])
-    const [filterClave, setFilterClave] = useState<'todas' | 'clave' | 'no_clave'>('todas')
-    const [selectedResponsables, setSelectedResponsables] = useState<Set<string>>(new Set())
+    const [filterClave, setFilterClave] = useState<string>('')
+    const [filterObligatorio, setFilterObligatorio] = useState<string>('')
+    const [selectedLineas, setSelectedLineas] = useState<string[]>([])
     const [selectedDepartamentos, setSelectedDepartamentos] = useState<string[]>([])
     const [subdepartamentos, setSubdepartamentos] = useState<Subdepartamento[]>([])
 
@@ -101,7 +86,32 @@ const CumplimientoMasivo: FC = () => {
     }
 
     // Derivar opciones para filtros basadas en los datos cargados
-    const { clientesOpts, procesosOpts, hitosOpts, responsablesOpts } = useMemo(() => {
+    // Obtener líneas únicas para el filtro a partir de los hitos
+    const lineasUnicas = useMemo(() => {
+        const lineaSet = new Set<string>()
+        allItems.forEach(hito => {
+            if (hito.codSubDepar && hito.codSubDepar.length > 4) {
+                lineaSet.add(hito.codSubDepar.substring(4))
+            }
+        })
+        return Array.from(lineaSet).sort()
+    }, [allItems])
+
+    const departamentosUnicos = useMemo(() => {
+        const depMap = new Map<string, { cod: string, nombre: string }>()
+        allItems.forEach(item => {
+            if (item.codSubDepar) {
+                const codDep = item.codSubDepar.substring(0, 4)
+                const depName = item.departamento_cliente || item.departamento || codDep
+                if (!depMap.has(codDep)) {
+                    depMap.set(codDep, { cod: codDep, nombre: depName })
+                }
+            }
+        })
+        return Array.from(depMap.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }))
+    }, [allItems])
+
+    const { clientesOpts, procesosOpts, hitosOpts } = useMemo(() => {
         const clientesMap = new Map<string, string>()
         const procesosMap = new Map<number, string>()
         const hitosMap = new Map<number, string>()
@@ -137,12 +147,7 @@ const CumplimientoMasivo: FC = () => {
             label: nombre
         })).sort((a, b) => a.label.localeCompare(b.label))
 
-        const rOpts = Array.from(responsablesSet).map(tipo => ({
-            value: tipo,
-            label: tipo
-        })).sort((a, b) => a.label.localeCompare(b.label))
-
-        return { clientesOpts: cOpts, procesosOpts: pOpts, hitosOpts: hOpts, responsablesOpts: rOpts }
+        return { clientesOpts: cOpts, procesosOpts: pOpts, hitosOpts: hOpts }
     }, [allItems])
 
 
@@ -169,7 +174,7 @@ const CumplimientoMasivo: FC = () => {
             }
 
             // Filtro Cliente
-            if (selectedClienteId && item.cliente_id !== selectedClienteId) return false
+            if (selectedClienteIds.length > 0 && !selectedClienteIds.includes(item.cliente_id)) return false
 
             // Filtro Fechas (sobre fecha_limite)
             if (fechaDesde) {
@@ -192,24 +197,26 @@ const CumplimientoMasivo: FC = () => {
             }
 
             // Filtro Clave
-            if (filterClave !== 'todas') {
-                const isClave = filterClave === 'clave'
-                if (Boolean(item.critico) !== isClave) return false
+            if (filterClave !== '') {
+                if (String(!!item.critico) !== filterClave) return false
             }
 
-            // Filtro Responsables (Multi)
-            if (selectedResponsables.size > 0) {
-                if (!item.tipo || !selectedResponsables.has(item.tipo)) return false
+            // Filtro Obligatorio
+            if (filterObligatorio !== '') {
+                if (String(!!item.obligatorio) !== filterObligatorio) return false
             }
 
-            // Filtro Departamentos (Multi)
+            // Filtro Departamentos y Líneas
+            if (selectedLineas.length > 0) {
+                if (!item.codSubDepar || !selectedLineas.includes(item.codSubDepar)) return false
+            }
             if (selectedDepartamentos.length > 0) {
-                if (!item.codSubDepar || !selectedDepartamentos.includes(item.codSubDepar)) return false
+                if (!item.codSubDepar || !selectedDepartamentos.includes(item.codSubDepar.substring(0, 4))) return false
             }
 
             return true
         })
-    }, [allItems, selectedClienteId, fechaDesde, fechaHasta, selectedProcesos, selectedHitos, searchTerm, filterClave, selectedResponsables, selectedDepartamentos])
+    }, [allItems, selectedClienteIds, fechaDesde, fechaHasta, selectedProcesos, selectedHitos, searchTerm, filterClave, filterObligatorio, selectedDepartamentos, selectedLineas])
 
     // Ordenar items
     const sortedItems = useMemo(() => {
@@ -224,8 +231,12 @@ const CumplimientoMasivo: FC = () => {
                     valB = b.cliente_nombre || ''
                     break
                 case 'cubo':
-                    valA = `${a.codSubDepar || ''} ${a.departamento_cliente || ''}`
-                    valB = `${b.codSubDepar || ''} ${b.departamento_cliente || ''}`
+                    valA = a.codSubDepar ? a.codSubDepar.substring(4) : ''
+                    valB = b.codSubDepar ? b.codSubDepar.substring(4) : ''
+                    break
+                case 'linea':
+                    valA = a.departamento_cliente || a.departamento || ''
+                    valB = b.departamento_cliente || b.departamento || ''
                     break
                 case 'proceso':
                     valA = a.proceso_nombre || ''
@@ -272,11 +283,12 @@ const CumplimientoMasivo: FC = () => {
     const handleResetFiltros = () => {
         setFechaDesde(getTodayDate())
         setFechaHasta('')
-        setSelectedClienteId('')
+        setSelectedClienteIds([])
         setSelectedProcesos([])
         setSelectedHitos([])
-        setFilterClave('todas')
-        setSelectedResponsables(new Set())
+        setFilterClave('')
+        setFilterObligatorio('')
+        setSelectedLineas([])
         setSelectedDepartamentos([])
         setSearchTerm('')
         setPage(1)
@@ -299,16 +311,6 @@ const CumplimientoMasivo: FC = () => {
         }
     }
 
-    const toggleResponsable = (tipo: string) => {
-        const nuevos = new Set(selectedResponsables)
-        if (nuevos.has(tipo)) {
-            nuevos.delete(tipo)
-        } else {
-            nuevos.add(tipo)
-        }
-        setSelectedResponsables(nuevos)
-        setPage(1)
-    }
 
     const onSelectAllVisible = (checked: boolean) => {
         if (checked) {
@@ -399,6 +401,40 @@ const CumplimientoMasivo: FC = () => {
         padding: '16px 12px',
         verticalAlign: 'middle',
         fontSize: '13px'
+    }
+
+    // Estilos comunes para todos los `react-select` del Drawer
+    const selectStyles = {
+        menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+        control: (base: any) => ({
+            ...base,
+            backgroundColor: 'rgba(255,255,255,0.12)',
+            borderColor: 'rgba(255,255,255,0.25)',
+            color: 'white',
+            borderRadius: '8px',
+            minHeight: '38px',
+            boxShadow: 'none',
+            '&:hover': {
+                borderColor: 'rgba(255,255,255,0.5)'
+            }
+        }),
+        menu: (base: any) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+        option: (base: any, state: any) => ({
+            ...base,
+            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+            color: atisaStyles.colors.dark,
+            cursor: 'pointer',
+            ':active': { backgroundColor: atisaStyles.colors.secondary }
+        }),
+        multiValue: (base: any) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
+        multiValueLabel: (base: any) => ({ ...base, color: 'white', fontSize: '12px', padding: '2px 6px' }),
+        multiValueRemove: (base: any) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
+        placeholder: (base: any) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }),
+        input: (base: any) => ({ ...base, color: 'white' }),
+        singleValue: (base: any) => ({ ...base, color: 'white' }),
+        indicatorSeparator: (base: any) => ({ ...base, backgroundColor: 'rgba(255,255,255,0.3)' }),
+        dropdownIndicator: (base: any) => ({ ...base, color: 'rgba(255,255,255,0.6)' }),
+        clearIndicator: (base: any) => ({ ...base, color: 'rgba(255,255,255,0.6)' }),
     }
 
     return (
@@ -630,6 +666,9 @@ const CumplimientoMasivo: FC = () => {
                                         <th className="cursor-pointer user-select-none" onClick={() => handleSort('cubo')} style={tableHeaderStyle}>
                                             Cubo {getSortIcon('cubo')}
                                         </th>
+                                        <th className="cursor-pointer user-select-none" onClick={() => handleSort('linea')} style={tableHeaderStyle}>
+                                            Línea {getSortIcon('linea')}
+                                        </th>
                                         <th className="cursor-pointer user-select-none" onClick={() => handleSort('proceso')} style={tableHeaderStyle}>
                                             Proceso {getSortIcon('proceso')}
                                         </th>
@@ -638,9 +677,6 @@ const CumplimientoMasivo: FC = () => {
                                         </th>
                                         <th className="cursor-pointer user-select-none" onClick={() => handleSort('responsable')} style={tableHeaderStyle}>
                                             Responsable {getSortIcon('responsable')}
-                                        </th>
-                                        <th className="cursor-pointer user-select-none" onClick={() => handleSort('clave')} style={tableHeaderStyle}>
-                                            Clave {getSortIcon('clave')}
                                         </th>
                                         <th className="cursor-pointer user-select-none" onClick={() => handleSort('estado')} style={tableHeaderStyle}>
                                             Estado {getSortIcon('estado')}
@@ -736,18 +772,36 @@ const CumplimientoMasivo: FC = () => {
                                                         <td style={{ ...tableCellStyleBase, color: isSelected ? atisaStyles.colors.secondary : atisaStyles.colors.primary, fontWeight: '600', borderBottom: `1px solid ${atisaStyles.colors.light}` }}>{item.cliente_nombre}</td>
                                                     )}
                                                     <td style={{ ...tableCellStyleBase, color: atisaStyles.colors.dark, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>
-                                                        {item.codSubDepar && item.codSubDepar.length > 4 ? (
-                                                            `${item.codSubDepar.substring(4)} - ${item.departamento_cliente || item.departamento || '-'}`
-                                                        ) : item.codSubDepar ? (
-                                                            `${item.codSubDepar} - ${item.departamento_cliente || item.departamento || '-'}`
-                                                        ) : (
-                                                            item.departamento_cliente || item.departamento || '-'
-                                                        )}
+                                                        {item.codSubDepar ? item.codSubDepar.substring(4) : '-'}
+                                                    </td>
+                                                    <td style={{ ...tableCellStyleBase, color: atisaStyles.colors.dark, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>
+                                                        {item.departamento_cliente || item.departamento || '-'}
                                                     </td>
                                                     <td style={{ ...tableCellStyleBase, color: atisaStyles.colors.dark, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>{item.proceso_nombre}</td>
-                                                    <td style={{ ...tableCellStyleBase, color: atisaStyles.colors.dark, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>{item.hito_nombre}</td>
+                                                    <td style={{ ...tableCellStyleBase, color: atisaStyles.colors.dark, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>
+                                                        <div className='d-flex align-items-center gap-2' style={{ position: 'relative', paddingLeft: (Boolean(item.critico) || Boolean(item.obligatorio)) ? '10px' : '0' }}>
+                                                            {Boolean(item.critico) && (
+                                                                <div style={{ position: 'absolute', left: '-12px', top: '-10px', bottom: '-10px', width: '5px', backgroundColor: atisaStyles.colors.error, borderRadius: '0 3px 3px 0' }} />
+                                                            )}
+                                                            {!Boolean(item.critico) && Boolean(item.obligatorio) && (
+                                                                <div style={{ position: 'absolute', left: '-12px', top: '-10px', bottom: '-10px', width: '5px', backgroundColor: atisaStyles.colors.accent, borderRadius: '0 3px 3px 0' }} />
+                                                            )}
+                                                            <span style={{ fontWeight: Boolean(item.critico) ? '700' : '500' }}>
+                                                                {item.hito_nombre || '-'}
+                                                            </span>
+                                                            {Boolean(item.obligatorio) && (
+                                                                <div className='d-flex align-items-center justify-content-center flex-shrink-0' style={{ backgroundColor: atisaStyles.colors.accent, width: '20px', height: '20px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,161,222,0.3)' }} title='Obligatorio'>
+                                                                    <i className='bi bi-asterisk' style={{ fontSize: '11px', color: '#fff', lineHeight: 1 }}></i>
+                                                                </div>
+                                                            )}
+                                                            {Boolean(item.critico) && (
+                                                                <div className='d-flex align-items-center justify-content-center flex-shrink-0' style={{ backgroundColor: atisaStyles.colors.error, width: '20px', height: '20px', borderRadius: '4px', boxShadow: '0 2px 6px rgba(217,33,78,0.4)' }} title='Crítico'>
+                                                                    <i className='bi bi-exclamation-triangle-fill' style={{ fontSize: '11px', color: '#fff', lineHeight: 1 }}></i>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
                                                     <td style={{ ...tableCellStyleBase, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>{renderResponsable(item.tipo)}</td>
-                                                    <td style={{ ...tableCellStyleBase, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>{renderClave(item.critico)}</td>
                                                     <td style={{ ...tableCellStyleBase, borderBottom: `1px solid ${atisaStyles.colors.light}` }}>
                                                         <span
                                                             className="badge"
@@ -838,37 +892,24 @@ const CumplimientoMasivo: FC = () => {
                 }}
             >
                 {/* Cabecera del drawer */}
-                <div style={{
-                    padding: '20px 24px',
-                    borderBottom: '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexShrink: 0
-                }}>
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <i className="bi bi-funnel-fill" style={{ color: 'white', fontSize: '18px' }}></i>
                         <span style={{ color: 'white', fontFamily: atisaStyles.fonts.primary, fontWeight: '700', fontSize: '1.2rem' }}>Filtros</span>
                     </div>
-                    <button
-                        onClick={() => setShowFilters(false)}
-                        style={{
-                            background: 'rgba(255,255,255,0.15)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            borderRadius: '8px',
-                            color: 'white',
-                            width: '36px',
-                            height: '36px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            fontSize: '18px',
-                            transition: 'background 0.2s'
-                        }}
-                    >
-                        <i className="bi bi-x"></i>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                            className="btn btn-sm"
+                            onClick={handleResetFiltros}
+                            title="Limpiar filtros"
+                            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600', padding: '6px 12px' }}
+                        >
+                            <i className="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button onClick={() => setShowFilters(false)} title="Cerrar" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: 'white', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>
+                            <i className="bi bi-x"></i>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Contenido del drawer */}
@@ -894,20 +935,22 @@ const CumplimientoMasivo: FC = () => {
                     {isAdmin && (
                         <div>
                             <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cliente</label>
-                            <select
-                                className="form-select form-select-sm"
-                                value={selectedClienteId}
-                                onChange={(e) => {
-                                    setSelectedClienteId(e.target.value)
+                            <Select
+                                isMulti
+                                closeMenuOnSelect={false}
+                                options={clientesOpts.map(c => ({ value: c.id, label: c.nombre }))}
+                                value={clientesOpts
+                                    .filter(c => selectedClienteIds.includes(c.id))
+                                    .map(c => ({ value: c.id, label: c.nombre }))}
+                                onChange={(opts) => {
+                                    setSelectedClienteIds(opts ? (opts as any[]).map((o: any) => o.value) : [])
                                     setPage(1)
                                 }}
-                                style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
-                            >
-                                <option value="" style={{ color: 'black' }}>Todos los clientes</option>
-                                {clientesOpts.map((c) => (
-                                    <option key={c.id} value={c.id} style={{ color: 'black' }}>{c.nombre}</option>
-                                ))}
-                            </select>
+                                placeholder="Todos los clientes..."
+                                noOptionsMessage={() => 'No hay opciones'}
+                                menuPortalTarget={document.body}
+                                styles={selectStyles}
+                            />
                         </div>
                     )}
 
@@ -944,8 +987,8 @@ const CumplimientoMasivo: FC = () => {
                         <Select
                             isMulti
                             closeMenuOnSelect={false}
-                            hideSelectedOptions={false}
-                            components={{ Option: CheckboxOption }}
+
+
                             options={procesosOpts}
                             value={selectedProcesos}
                             onChange={(newValue) => {
@@ -954,31 +997,7 @@ const CumplimientoMasivo: FC = () => {
                             }}
                             placeholder="Seleccionar procesos..."
                             menuPortalTarget={document.body}
-                            styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({
-                                    ...base,
-                                    backgroundColor: 'rgba(255,255,255,0.12)',
-                                    borderColor: 'rgba(255,255,255,0.25)',
-                                    color: 'white',
-                                    borderRadius: '8px',
-                                    minHeight: '38px'
-                                }),
-                                menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
-                                option: (base, state) => ({
-                                    ...base,
-                                    backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
-                                    color: atisaStyles.colors.dark,
-                                    cursor: 'pointer',
-                                    ':active': { backgroundColor: atisaStyles.colors.secondary }
-                                }),
-                                multiValue: (base) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
-                                multiValueLabel: (base) => ({ ...base, color: 'white', fontSize: '12px' }),
-                                multiValueRemove: (base) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
-                                placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }),
-                                input: (base) => ({ ...base, color: 'white' }),
-                                singleValue: (base) => ({ ...base, color: 'white' }),
-                            }}
+                            styles={selectStyles}
                         />
                     </div>
 
@@ -988,8 +1007,8 @@ const CumplimientoMasivo: FC = () => {
                         <Select
                             isMulti
                             closeMenuOnSelect={false}
-                            hideSelectedOptions={false}
-                            components={{ Option: CheckboxOption }}
+
+
                             options={hitosOpts}
                             value={selectedHitos}
                             onChange={(newValue) => {
@@ -998,39 +1017,35 @@ const CumplimientoMasivo: FC = () => {
                             }}
                             placeholder="Seleccionar hitos..."
                             menuPortalTarget={document.body}
-                            styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({
-                                    ...base,
-                                    backgroundColor: 'rgba(255,255,255,0.12)',
-                                    borderColor: 'rgba(255,255,255,0.25)',
-                                    color: 'white',
-                                    borderRadius: '8px',
-                                    minHeight: '38px'
-                                }),
-                                menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
-                                option: (base, state) => ({
-                                    ...base,
-                                    backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
-                                    color: atisaStyles.colors.dark,
-                                    cursor: 'pointer',
-                                    ':active': { backgroundColor: atisaStyles.colors.secondary }
-                                }),
-                                multiValue: (base) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
-                                multiValueLabel: (base) => ({ ...base, color: 'white', fontSize: '12px' }),
-                                multiValueRemove: (base) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
-                                placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }),
-                                input: (base) => ({ ...base, color: 'white' }),
-                                singleValue: (base) => ({ ...base, color: 'white' }),
-                            }}
+                            styles={selectStyles}
                         />
                     </div>
 
-                    {/* Departamentos */}
+                    {/* Líneas */}
                     <div>
-                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Departamentos</label>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Líneas</label>
                         <Select
                             isMulti
+                            closeMenuOnSelect={false}
+                            options={departamentosUnicos.map(d => ({ value: d.cod, label: d.nombre }))}
+                            value={departamentosUnicos
+                                .filter(d => selectedDepartamentos.includes(d.cod))
+                                .map(d => ({ value: d.cod, label: d.nombre }))
+                            }
+                            onChange={(newValue) => setSelectedDepartamentos(newValue ? (newValue as any[]).map(v => v.value) : [])}
+                            placeholder="Seleccionar líneas..."
+                            noOptionsMessage={() => "No hay opciones"}
+                            menuPortalTarget={document.body}
+                            styles={selectStyles}
+                        />
+                    </div>
+
+                    {/* Cubos */}
+                    <div>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubos</label>
+                        <Select
+                            isMulti
+                            closeMenuOnSelect={false}
                             options={subdepartamentos
                                 .filter(subDep => subDep.codSubDepar !== null)
                                 .map(subDep => ({
@@ -1039,141 +1054,114 @@ const CumplimientoMasivo: FC = () => {
                                 }))
                             }
                             value={subdepartamentos
-                                .filter(subDep => subDep.codSubDepar !== null && selectedDepartamentos.includes(subDep.codSubDepar!))
+                                .filter(subDep => subDep.codSubDepar !== null && selectedLineas.includes(subDep.codSubDepar!))
                                 .map(subDep => ({
                                     value: subDep.codSubDepar!,
                                     label: `${subDep.codSubDepar?.substring(4)} - ${subDep.nombre || ''}`
                                 }))
                             }
                             onChange={(selectedOptions) => {
-                                setSelectedDepartamentos(selectedOptions ? (selectedOptions as any).map((opt: any) => opt.value) : [])
-                                setPage(1)
+                                setSelectedLineas(selectedOptions ? (selectedOptions as any).map((opt: any) => opt.value) : [])
                             }}
-                            placeholder="Seleccionar departamentos..."
+                            placeholder="Seleccionar cubos..."
                             noOptionsMessage={() => "No hay opciones"}
                             menuPortalTarget={document.body}
-                            styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                control: (base) => ({
-                                    ...base,
-                                    backgroundColor: 'rgba(255,255,255,0.12)',
-                                    borderColor: 'rgba(255,255,255,0.25)',
-                                    color: 'white',
-                                    borderRadius: '8px',
-                                    minHeight: '38px'
-                                }),
-                                menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
-                                option: (base, state) => ({
-                                    ...base,
-                                    backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
-                                    color: atisaStyles.colors.dark,
-                                    cursor: 'pointer',
-                                    ':active': { backgroundColor: atisaStyles.colors.secondary }
-                                }),
-                                multiValue: (base) => ({ ...base, backgroundColor: atisaStyles.colors.secondary, borderRadius: '4px' }),
-                                multiValueLabel: (base) => ({ ...base, color: 'white', fontSize: '12px' }),
-                                multiValueRemove: (base) => ({ ...base, color: 'white', ':hover': { backgroundColor: '#d32f2f', color: 'white' } }),
-                                placeholder: (base) => ({ ...base, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }),
-                                input: (base) => ({ ...base, color: 'white' }),
-                                singleValue: (base) => ({ ...base, color: 'white' }),
-                            }}
+                            styles={selectStyles}
                         />
                     </div>
 
-                    {/* Clave */}
-                    <div>
-                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px', display: 'block' }}>Importancia (Clave)</label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            <div
-                                onClick={() => { setFilterClave('todas'); setPage(1); }}
-                                style={{
-                                    cursor: 'pointer',
-                                    backgroundColor: filterClave === 'todas' ? 'white' : 'rgba(255,255,255,0.1)',
-                                    color: filterClave === 'todas' ? atisaStyles.colors.primary : 'white',
-                                    border: '1px solid white',
-                                    padding: '5px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                Todas
-                            </div>
-                            <div
-                                onClick={() => { setFilterClave('clave'); setPage(1); }}
-                                style={{
-                                    cursor: 'pointer',
-                                    backgroundColor: filterClave === 'clave' ? '#ffc107' : 'rgba(255,255,255,0.1)',
-                                    color: filterClave === 'clave' ? 'black' : 'white',
-                                    border: '1px solid #ffc107',
-                                    padding: '5px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                Clave
-                            </div>
-                            <div
-                                onClick={() => { setFilterClave('no_clave'); setPage(1); }}
-                                style={{
-                                    cursor: 'pointer',
-                                    backgroundColor: filterClave === 'no_clave' ? '#50cd89' : 'rgba(255,255,255,0.1)',
-                                    color: filterClave === 'no_clave' ? 'white' : 'white',
-                                    border: '1px solid #50cd89',
-                                    padding: '5px 12px',
-                                    borderRadius: '20px',
-                                    fontSize: '12px',
-                                    fontWeight: '600',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                No Clave
-                            </div>
+                    {/* Fechas */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div>
+                            <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Límite Desde</label>
+                            <input
+                                type="date"
+                                className="form-control form-control-sm"
+                                value={fechaDesde}
+                                onChange={(e) => setFechaDesde(e.target.value)}
+                                style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Límite Hasta</label>
+                            <input
+                                type="date"
+                                className="form-control form-control-sm"
+                                value={fechaHasta}
+                                onChange={(e) => setFechaHasta(e.target.value)}
+                                style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
+                            />
                         </div>
                     </div>
 
-                    {/* Responsable */}
+
+                    {/* Crítico / Obligatorio */}
                     <div>
-                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px', display: 'block' }}>Responsable</label>
-                        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                            {responsablesOpts.map((opt) => (
-                                <div key={opt.value} className="form-check">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id={`drawer-check-resp-${opt.value}`}
-                                        checked={selectedResponsables.has(opt.value)}
-                                        onChange={() => toggleResponsable(opt.value)}
-                                        style={{ cursor: 'pointer' }}
-                                    />
-                                    <label className="form-check-label" htmlFor={`drawer-check-resp-${opt.value}`} style={{ color: 'white', fontSize: '13px', cursor: 'pointer' }}>
-                                        {opt.label}
-                                    </label>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px', display: 'block' }}>Características del hito</label>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {[
+                                { value: '', label: 'Todos', icon: 'bi-list-ul' },
+                                { value: 'true', label: 'Crítico', icon: 'bi-exclamation-triangle-fill', color: atisaStyles.colors.error },
+                                { value: 'false', label: 'No crítico', icon: 'bi-check-circle', color: 'rgba(255,255,255,0.5)' },
+                            ].map(opt => (
+                                <div
+                                    key={`crit-${opt.value}`}
+                                    onClick={() => setFilterClave(opt.value)}
+                                    style={{
+                                        cursor: 'pointer',
+                                        backgroundColor: filterClave === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
+                                        color: filterClave === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
+                                        border: `1px solid ${opt.color || 'white'}`,
+                                        padding: '5px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        opacity: filterClave === opt.value ? 1 : 0.65,
+                                        transition: 'all 0.2s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                >
+                                    <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
+                                    {opt.label}
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                            {[
+                                { value: '', label: 'Todos', icon: 'bi-list-ul' },
+                                { value: 'true', label: 'Obligatorio', icon: 'bi-asterisk', color: atisaStyles.colors.accent },
+                                { value: 'false', label: 'No obligatorio', icon: 'bi-x-circle', color: 'rgba(255,255,255,0.5)' },
+                            ].map(opt => (
+                                <div
+                                    key={`obl-${opt.value}`}
+                                    onClick={() => setFilterObligatorio(opt.value)}
+                                    style={{
+                                        cursor: 'pointer',
+                                        backgroundColor: filterObligatorio === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
+                                        color: filterObligatorio === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
+                                        border: `1px solid ${opt.color || 'white'}`,
+                                        padding: '5px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        opacity: filterObligatorio === opt.value ? 1 : 0.65,
+                                        transition: 'all 0.2s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                >
+                                    <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
+                                    {opt.label}
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Footer del drawer */}
-                <div style={{
-                    padding: '16px 24px',
-                    borderTop: '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    gap: '10px',
-                    flexShrink: 0
-                }}>
-                    <button
-                        className="btn btn-sm w-100"
-                        onClick={handleResetFiltros}
-                        style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600' }}
-                    >
-                        <i className="bi bi-arrow-clockwise me-1"></i> Limpiar Filtros
-                    </button>
-                </div>
+
             </div>
 
         </div>

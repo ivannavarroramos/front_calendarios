@@ -1,6 +1,7 @@
 import { FC, useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../../styles/atisaStyles'
+import { formatDateDisplay, formatDateTimeDisplay } from '../../../../utils/dateFormatter'
 import SharedPagination from '../../../../components/pagination/SharedPagination'
 import { Cliente, getAllClientes } from '../../../../api/clientes'
 import { ClienteProcesoHito } from '../../../../api/clienteProcesoHitos'
@@ -46,7 +47,7 @@ const StatusTodosClientes: FC = () => {
     const [fechaHasta, setFechaHasta] = useState('')
     const [clientesList, setClientesList] = useState<Cliente[]>([])
     const [showFilters, setShowFilters] = useState(false)
-    const [sortField, setSortField] = useState<'cliente' | 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'departamento' | 'estado_proceso' | 'linea'>('fecha_limite')
+    const [sortField, setSortField] = useState<'cliente' | 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'linea' | 'estado_proceso' | 'cubo'>('fecha_limite')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
     const [cumplimientosPorHito, setCumplimientosPorHito] = useState<Record<number, ClienteProcesoHitoCumplimiento[]>>({})
     const [subdepartamentos, setSubdepartamentos] = useState<Subdepartamento[]>([])
@@ -161,13 +162,7 @@ const StatusTodosClientes: FC = () => {
     }, [isAdmin, currentUser])
 
     const formatDate = (date: string) => {
-        if (!date) return '-'
-        const d = new Date(date)
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        })
+        return formatDateDisplay(date)
     }
 
     const formatTime = (time: string | null) => {
@@ -182,15 +177,7 @@ const StatusTodosClientes: FC = () => {
     }
 
     const formatDateTime = (dateTime: string | null) => {
-        if (!dateTime) return '-'
-        const d = new Date(dateTime)
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
+        return formatDateTimeDisplay(dateTime)
     }
 
     // Determinar estado temporal del hito respecto a hoy (UTC)
@@ -377,7 +364,7 @@ const StatusTodosClientes: FC = () => {
 
 
     // Función para manejar el ordenamiento
-    const handleSort = (field: 'cliente' | 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'departamento' | 'estado_proceso' | 'linea') => {
+    const handleSort = (field: 'cliente' | 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'linea' | 'estado_proceso' | 'cubo') => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
         } else {
@@ -387,7 +374,7 @@ const StatusTodosClientes: FC = () => {
     }
 
     // Función para obtener el icono de ordenamiento
-    const getSortIcon = (field: 'cliente' | 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'departamento' | 'estado_proceso' | 'linea') => {
+    const getSortIcon = (field: 'cliente' | 'proceso' | 'hito' | 'estado' | 'fecha_limite' | 'hora_limite' | 'fecha_estado' | 'linea' | 'estado_proceso' | 'cubo') => {
         if (sortField !== field) {
             return (
                 <i
@@ -464,16 +451,16 @@ const StatusTodosClientes: FC = () => {
                     break
 
 
-                case 'linea':
-                    const linA = a.codSubDepar?.substring(4) || ''
-                    const linB = b.codSubDepar?.substring(4) || ''
-                    comparison = linA.localeCompare(linB, 'es', { sensitivity: 'base' })
+                case 'cubo':
+                    const cuboA = a.codSubDepar?.substring(4) || ''
+                    const cuboB = b.codSubDepar?.substring(4) || ''
+                    comparison = cuboA.localeCompare(cuboB, 'es', { sensitivity: 'base', numeric: true })
                     break
 
-                case 'departamento':
-                    const depA = a.departamento_cliente || a.departamento || ''
-                    const depB = b.departamento_cliente || b.departamento || ''
-                    comparison = depA.localeCompare(depB, 'es', { sensitivity: 'base' })
+                case 'linea':
+                    const linA = a.departamento_cliente || a.departamento || ''
+                    const linB = b.departamento_cliente || b.departamento || ''
+                    comparison = linA.localeCompare(linB, 'es', { sensitivity: 'base' })
                     break
 
                 case 'estado_proceso':
@@ -832,37 +819,37 @@ const StatusTodosClientes: FC = () => {
                 }}
             >
                 {/* Cabecera del drawer */}
-                <div style={{
-                    padding: '20px 24px',
-                    borderBottom: '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexShrink: 0
-                }}>
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <i className="bi bi-funnel-fill" style={{ color: 'white', fontSize: '18px' }}></i>
                         <span style={{ color: 'white', fontFamily: atisaStyles.fonts.primary, fontWeight: '700', fontSize: '1.2rem' }}>Filtros</span>
                     </div>
-                    <button
-                        onClick={() => setShowFilters(false)}
-                        style={{
-                            background: 'rgba(255,255,255,0.15)',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            borderRadius: '8px',
-                            color: 'white',
-                            width: '36px',
-                            height: '36px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            fontSize: '18px',
-                            transition: 'background 0.2s'
-                        }}
-                    >
-                        <i className="bi bi-x"></i>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                            className="btn btn-sm"
+                            onClick={exportarExcel}
+                            disabled={exporting}
+                            title="Exportar Excel"
+                            style={{ color: 'white', backgroundColor: '#50cd89', borderColor: '#50cd89', fontWeight: '600', padding: '6px 12px', opacity: exporting ? 0.7 : 1 }}
+                        >
+                            {exporting ? (
+                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            ) : (
+                                <i className="bi bi-file-earmark-excel"></i>
+                            )}
+                        </button>
+                        <button
+                            className="btn btn-sm"
+                            onClick={limpiarFiltros}
+                            title="Limpiar filtros"
+                            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600', padding: '6px 12px' }}
+                        >
+                            <i className="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button onClick={() => setShowFilters(false)} title="Cerrar" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: 'white', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>
+                            <i className="bi bi-x"></i>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Contenido del drawer */}
@@ -945,9 +932,9 @@ const StatusTodosClientes: FC = () => {
                         />
                     </div>
 
-                    {/* Departamentos */}
+                    {/* Líneas */}
                     <div>
-                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Departamentos</label>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Líneas</label>
                         <Select
                             isMulti
                             closeMenuOnSelect={false}
@@ -987,9 +974,9 @@ const StatusTodosClientes: FC = () => {
                         />
                     </div>
 
-                    {/* Líneas */}
+                    {/* Cubos */}
                     <div>
-                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Líneas</label>
+                        <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubos</label>
                         <Select
                             isMulti
                             closeMenuOnSelect={false}
@@ -1182,35 +1169,7 @@ const StatusTodosClientes: FC = () => {
                     </div>
                 </div>
 
-                {/* Footer del drawer */}
-                <div style={{
-                    padding: '16px 24px',
-                    borderTop: '1px solid rgba(255,255,255,0.15)',
-                    display: 'flex',
-                    gap: '10px',
-                    flexShrink: 0
-                }}>
-                    <button
-                        className="btn btn-sm flex-grow-1"
-                        onClick={exportarExcel}
-                        disabled={exporting}
-                        style={{ color: 'white', backgroundColor: '#50cd89', borderColor: '#50cd89', opacity: exporting ? 0.7 : 1, fontWeight: '600' }}
-                    >
-                        {exporting ? (
-                            <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                        ) : (
-                            <i className="bi bi-file-earmark-excel me-1"></i>
-                        )}
-                        Exportar Excel
-                    </button>
-                    <button
-                        className="btn btn-sm"
-                        onClick={limpiarFiltros}
-                        style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.1)', fontWeight: '600' }}
-                    >
-                        <i className="bi bi-arrow-clockwise me-1"></i> Limpiar
-                    </button>
-                </div>
+
             </div>
 
             <div className="p-4 flex-grow-1">
@@ -1272,8 +1231,8 @@ const StatusTodosClientes: FC = () => {
                                     <th className="cursor-pointer user-select-none" onClick={() => handleSort('linea')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
                                         Línea {getSortIcon('linea')}
                                     </th>
-                                    <th className="cursor-pointer user-select-none" onClick={() => handleSort('departamento')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
-                                        Cubo {getSortIcon('departamento')}
+                                    <th className="cursor-pointer user-select-none" onClick={() => handleSort('cubo')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
+                                        Cubo {getSortIcon('cubo')}
                                     </th>
                                     <th className="cursor-pointer user-select-none" onClick={() => handleSort('proceso')} style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, cursor: 'pointer' }}>
                                         Proceso {getSortIcon('proceso')}
@@ -1419,19 +1378,19 @@ const StatusTodosClientes: FC = () => {
                                                     </td>
                                                 )}
                                                 <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>
+                                                    {hito.ultimo_cumplimiento ? (
+                                                        hito.ultimo_cumplimiento.departamento || '-'
+                                                    ) : (
+                                                        hito.departamento_cliente || hito.departamento || '-'
+                                                    )}
+                                                </td>
+                                                <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>
                                                     {hito.ultimo_cumplimiento?.codSubDepar ? (
                                                         hito.ultimo_cumplimiento.codSubDepar!.substring(4)
                                                     ) : hito.codSubDepar ? (
                                                         hito.codSubDepar!.substring(4)
                                                     ) : (
                                                         '-'
-                                                    )}
-                                                </td>
-                                                <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>
-                                                    {hito.ultimo_cumplimiento ? (
-                                                        hito.ultimo_cumplimiento.departamento || '-'
-                                                    ) : (
-                                                        hito.departamento_cliente || hito.departamento || '-'
                                                     )}
                                                 </td>
                                                 <td style={{ fontFamily: atisaStyles.fonts.secondary, color: atisaStyles.colors.dark, padding: '16px 12px', verticalAlign: 'middle', fontSize: '13px' }}>

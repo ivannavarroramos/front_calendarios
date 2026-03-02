@@ -1,8 +1,15 @@
-import { FC, useEffect, useState } from 'react'
-import { Modal, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { FC, useEffect, useState, useMemo } from 'react'
+import { Modal, OverlayTrigger, Tooltip, Collapse } from 'react-bootstrap'
 import { getAuditoriaCalendariosByCliente, AuditoriaCalendario } from '../../../api/auditoriaCalendarios'
 import { atisaStyles } from '../../../styles/atisaStyles'
 import SharedPagination from '../../../components/pagination/SharedPagination'
+import Select from 'react-select'
+import { getAllProcesos } from '../../../api/procesos'
+import { getAllHitos } from '../../../api/hitos'
+import { getAllSubdepartamentos, Subdepartamento } from '../../../api/subdepartamentos'
+import { getClienteProcesosHabilitadosByCliente } from '../../../api/clienteProcesos'
+import { getClienteProcesoHitosHabilitadosByProceso } from '../../../api/clienteProcesoHitos'
+import { formatDateDisplay, formatDateTimeDisplay } from '../../../utils/dateFormatter'
 
 interface Props {
   show: boolean
@@ -20,27 +27,81 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [itemsPerPage] = useState(6)
+  const [showFilters, setShowFilters] = useState(false)
+
+  // Estados para filtros
+  const [cuboFiltro, setCuboFiltro] = useState<string[]>([])
+  const [procesoFiltro, setProcesoFiltro] = useState('')
+  const [hitoFiltro, setHitoFiltro] = useState('')
+  const [claveFiltro, setClaveFiltro] = useState('')
+  const [motivoFiltro, setMotivoFiltro] = useState('')
+  const [usuarioFiltro, setUsuarioFiltro] = useState('')
+
+  // Opciones de filtros
+  const [procesosCliente, setProcesosCliente] = useState<{ id: number, nombre: string }[]>([])
+  const [hitosCliente, setHitosCliente] = useState<{ id: number, nombre: string }[]>([])
+  const [subdepartamentos, setSubdepartamentos] = useState<Subdepartamento[]>([])
 
 
   useEffect(() => {
     if (show) {
-      // Limpiar datos anteriores cuando se abre el modal
       setAuditoria([])
       setLoading(false)
       setCurrentPage(1)
       setTotalPages(1)
       setTotalItems(0)
 
-      // Establecer fechas por defecto (último año) usando UTC
       const hoy = new Date()
       const haceUnAno = new Date(Date.UTC(hoy.getUTCFullYear() - 1, hoy.getUTCMonth(), hoy.getUTCDate()))
 
       setFechaDesde(haceUnAno.toISOString().split('T')[0])
       setFechaHasta(hoy.toISOString().split('T')[0])
 
+      cargarFiltros()
       cargarAuditoria()
     }
   }, [show, clienteId])
+
+  const cargarFiltros = async () => {
+    try {
+      const [{ procesos }, { hitos }, resSubdeps] = await Promise.all([
+        getAllProcesos(),
+        getAllHitos(),
+        getAllSubdepartamentos(undefined, 1000, undefined, 'asc')
+      ]);
+      setSubdepartamentos(resSubdeps.subdepartamentos || []);
+
+      const resCP = await getClienteProcesosHabilitadosByCliente(clienteId);
+      const cpList = resCP.clienteProcesos || resCP;
+
+      const procsUnique = Array.from(new Map(
+        cpList.map((cp: any) => {
+          const pMaestro = procesos.find((p: any) => p.id === cp.proceso_id);
+          return [cp.proceso_id, {
+            id: cp.proceso_id,
+            nombre: pMaestro?.nombre || `Proceso ${cp.proceso_id}`
+          }];
+        })
+      ).values()) as { id: number, nombre: string }[];
+      procsUnique.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      setProcesosCliente(procsUnique);
+
+      const resHitos = await Promise.all(cpList.map((cp: any) => getClienteProcesoHitosHabilitadosByProceso(cp.id)));
+      const hitosIds = new Set<number>();
+      resHitos.forEach((listaHitos: any) => {
+        listaHitos.forEach((h: any) => hitosIds.add(h.hito_id));
+      });
+
+      const hitosInfo = Array.from(hitosIds).map(id => {
+        const hMaestro = hitos.find((h: any) => h.id === id);
+        return { id, nombre: hMaestro?.nombre || `Hito ${id}` };
+      });
+      hitosInfo.sort((a, b) => a.nombre.localeCompare(b.nombre));
+      setHitosCliente(hitosInfo);
+    } catch (error) {
+      console.error("Error cargando filtros modal:", error);
+    }
+  }
 
   const cargarAuditoria = async (page: number = currentPage) => {
     setLoading(true)
@@ -79,14 +140,7 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
   }
 
   const formatDate = (date: string) => {
-    const d = new Date(date)
-    return d.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    return formatDateTimeDisplay(date)
   }
 
   const getCampoNombre = (campo: string) => {
@@ -97,6 +151,47 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
       'estado': 'Estado'
     }
     return campos[campo] || campo
+  }
+
+  const usuariosUnicos = useMemo(() => {
+    const users = new Set<string>();
+    auditoria.forEach(item => {
+      const name = item.nombre_usuario || item.usuario;
+      if (name) users.add(name);
+    });
+    return Array.from(users).sort();
+  }, [auditoria]);
+
+  const motivosUnicos = useMemo(() => {
+    const motivos = new Set<string>();
+    auditoria.forEach(item => {
+      if (item.motivo_descripcion) motivos.add(item.motivo_descripcion);
+    });
+    return Array.from(motivos).sort();
+  }, [auditoria]);
+
+  const auditoriaProcesada = useMemo(() => {
+    return auditoria.filter(item => {
+      const matchesCubo = cuboFiltro.length === 0 || (item.codSubDepar && cuboFiltro.includes(item.codSubDepar));
+      const matchesProceso = !procesoFiltro || item.proceso_nombre === procesoFiltro;
+      const matchesHito = !hitoFiltro || item.hito_nombre === hitoFiltro;
+      const matchesClave = !claveFiltro || (claveFiltro === 'true' ? Boolean(item.critico) : !Boolean(item.critico));
+      const matchesMotivo = !motivoFiltro || (item.motivo_descripcion === motivoFiltro);
+      const matchesUsuario = !usuarioFiltro || (item.nombre_usuario === usuarioFiltro || item.usuario === usuarioFiltro);
+
+      return matchesCubo && matchesProceso && matchesHito && matchesClave && matchesMotivo && matchesUsuario;
+    });
+  }, [auditoria, cuboFiltro, procesoFiltro, hitoFiltro, claveFiltro, motivoFiltro, usuarioFiltro]);
+
+  const activeFiltersCount = [cuboFiltro.length > 0 ? '1' : '', procesoFiltro, hitoFiltro, claveFiltro, motivoFiltro, usuarioFiltro].filter(v => v !== '').length
+
+  const clearFilters = () => {
+    setCuboFiltro([])
+    setProcesoFiltro('')
+    setHitoFiltro('')
+    setClaveFiltro('')
+    setMotivoFiltro('')
+    setUsuarioFiltro('')
   }
 
   return (
@@ -164,84 +259,132 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
         </Modal.Header>
 
         <Modal.Body style={{ padding: '24px' }}>
-          {/* Filtros */}
+          {/* Sección de Filtros Premium */}
           <div
-            className="mb-4 p-3"
+            className="mb-4"
             style={{
-              backgroundColor: atisaStyles.colors.light,
-              borderRadius: '8px',
-              border: `1px solid ${atisaStyles.colors.accent}`
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              border: `1px solid ${atisaStyles.colors.light}`,
+              overflow: 'hidden',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.04)'
             }}
           >
-            <h6
+            <div
+              onClick={() => setShowFilters(!showFilters)}
               style={{
-                fontFamily: atisaStyles.fonts.primary,
-                color: atisaStyles.colors.primary,
-                fontWeight: 'bold',
-                marginBottom: '16px'
+                padding: '16px 20px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: showFilters ? atisaStyles.colors.light : 'white',
+                transition: 'all 0.2s'
               }}
             >
-              <i className="bi bi-funnel me-2"></i>
-              Filtros
-            </h6>
-
-            <div className="row g-3">
-              <div className="col-md-4">
-                <label className="form-label" style={{ fontWeight: '600' }}>
-                  Fecha Desde
-                </label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={fechaDesde}
-                  onChange={(e) => setFechaDesde(e.target.value)}
-                  style={{
-                    border: `1px solid ${atisaStyles.colors.light}`,
-                    borderRadius: '6px'
-                  }}
-                />
+              <div className='d-flex align-items-center gap-3'>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: atisaStyles.colors.primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white'
+                }}>
+                  <i className="bi bi-funnel-fill"></i>
+                </div>
+                <div>
+                  <h6 style={{ margin: 0, fontWeight: '700', color: atisaStyles.colors.primary }}>Filtros de Auditoría</h6>
+                  <span style={{ fontSize: '12px', color: '#7e8299' }}>
+                    {activeFiltersCount > 0 ? `${activeFiltersCount} filtros activos` : 'Haz clic para expandir los filtros'}
+                  </span>
+                </div>
               </div>
-
-              <div className="col-md-4">
-                <label className="form-label" style={{ fontWeight: '600' }}>
-                  Fecha Hasta
-                </label>
-                <input
-                  type="date"
-                  className="form-control"
-                  value={fechaHasta}
-                  onChange={(e) => setFechaHasta(e.target.value)}
-                  style={{
-                    border: `1px solid ${atisaStyles.colors.light}`,
-                    borderRadius: '6px'
-                  }}
-                />
-              </div>
-
-              <div className="col-md-4 d-flex align-items-end">
-                <button
-                  className="btn w-100"
-                  onClick={handleFiltrar}
-                  style={{
-                    backgroundColor: atisaStyles.colors.secondary,
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontWeight: '600',
-                    padding: '8px 16px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                  }}
-                >
-                  <i className="bi bi-search me-2"></i>
-                  Filtrar
-                </button>
+              <div className='d-flex align-items-center gap-3'>
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); clearFilters(); }}
+                    className='btn btn-link btn-sm p-0'
+                    style={{ color: atisaStyles.colors.error, fontSize: '12px', fontWeight: '600', textDecoration: 'none' }}
+                  >
+                    Limpiar Filtros
+                  </button>
+                )}
+                <i className={`bi bi-chevron-${showFilters ? 'up' : 'down'}`} style={{ color: atisaStyles.colors.primary }}></i>
               </div>
             </div>
+
+            <Collapse in={showFilters}>
+              <div>
+                <div style={{ padding: '0 20px 20px 20px', borderTop: `1px solid ${atisaStyles.colors.light}` }}>
+                  <div className="row g-4 mt-1">
+                    <div className="col-md-3">
+                      <label style={{ fontSize: '11px', fontWeight: '700', color: '#7e8299', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Rango de Fechas</label>
+                      <div className='d-flex gap-2'>
+                        <input type="date" className="form-control form-control-sm" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} style={{ fontSize: '12px' }} />
+                        <input type="date" className="form-control form-control-sm" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} style={{ fontSize: '12px' }} />
+                      </div>
+                    </div>
+
+                    <div className="col-md-3">
+                      <label style={{ fontSize: '11px', fontWeight: '700', color: '#7e8299', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Cubo / Línea</label>
+                      <Select
+                        isMulti
+                        options={subdepartamentos.map(s => ({ value: s.codSubDepar || '', label: `${s.codSubDepar?.substring(4)} - ${s.nombre}` }))}
+                        value={subdepartamentos.filter(s => cuboFiltro.includes(s.codSubDepar || '')).map(s => ({ value: s.codSubDepar || '', label: `${s.codSubDepar?.substring(4)} - ${s.nombre}` }))}
+                        onChange={(val: any) => setCuboFiltro(val.map((o: any) => o.value))}
+                        placeholder="Seleccionar..."
+                        styles={{
+                          control: (base) => ({ ...base, minHeight: '38px', borderRadius: '8px', borderColor: '#e4e6ef', fontSize: '12px' }),
+                          multiValue: (base) => ({ ...base, backgroundColor: atisaStyles.colors.light, borderRadius: '4px' }),
+                          multiValueLabel: (base) => ({ ...base, color: atisaStyles.colors.primary, fontWeight: '600' })
+                        }}
+                      />
+                    </div>
+
+                    <div className="col-md-3">
+                      <label style={{ fontSize: '11px', fontWeight: '700', color: '#7e8299', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Proceso</label>
+                      <select className='form-select form-select-sm' value={procesoFiltro} onChange={(e) => setProcesoFiltro(e.target.value)} style={{ borderRadius: '8px', fontSize: '12px' }}>
+                        <option value="">Cualquiera</option>
+                        {procesosCliente.map(p => <option key={p.id} value={p.nombre}>{p.nombre}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="col-md-3">
+                      <label style={{ fontSize: '11px', fontWeight: '700', color: '#7e8299', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Hito</label>
+                      <select className='form-select form-select-sm' value={hitoFiltro} onChange={(e) => setHitoFiltro(e.target.value)} style={{ borderRadius: '8px', fontSize: '12px' }}>
+                        <option value="">Cualquiera</option>
+                        {hitosCliente.map(h => <option key={h.id} value={h.nombre}>{h.nombre}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="col-md-3">
+                      <label style={{ fontSize: '11px', fontWeight: '700', color: '#7e8299', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Motivo</label>
+                      <select className='form-select form-select-sm' value={motivoFiltro} onChange={(e) => setMotivoFiltro(e.target.value)} style={{ borderRadius: '8px', fontSize: '12px' }}>
+                        <option value="">Todos</option>
+                        {motivosUnicos.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="col-md-3">
+                      <label style={{ fontSize: '11px', fontWeight: '700', color: '#7e8299', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Usuario</label>
+                      <select className='form-select form-select-sm' value={usuarioFiltro} onChange={(e) => setUsuarioFiltro(e.target.value)} style={{ borderRadius: '8px', fontSize: '12px' }}>
+                        <option value="">Cualquiera</option>
+                        {usuariosUnicos.map(u => <option key={u} value={u}>{u}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="col-md-6 d-flex align-items-end justify-content-end gap-2">
+                      <button className="btn btn-sm btn-primary px-6" onClick={handleFiltrar} style={{ borderRadius: '8px', fontWeight: '600' }}>
+                        <i className="bi bi-search me-2"></i> Aplicar Rango Fechas
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Collapse>
           </div>
 
           {/* Lista de auditoría */}
@@ -313,6 +456,7 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
                       }}
                     >
                       <th style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', backgroundColor: atisaStyles.colors.primary, color: 'white', whiteSpace: 'nowrap' }}>Cubo</th>
+                      <th style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', backgroundColor: atisaStyles.colors.primary, color: 'white', whiteSpace: 'nowrap' }}>Línea</th>
                       <th style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', backgroundColor: atisaStyles.colors.primary, color: 'white', whiteSpace: 'nowrap' }}>Proceso</th>
                       <th style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', backgroundColor: atisaStyles.colors.primary, color: 'white', whiteSpace: 'nowrap' }}>Hito</th>
                       <th style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', backgroundColor: atisaStyles.colors.primary, color: 'white', whiteSpace: 'nowrap' }}>Origen</th>
@@ -326,7 +470,7 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
                     </tr>
                   </thead>
                   <tbody>
-                    {auditoria.map((item, index) => (
+                    {auditoriaProcesada.map((item, index) => (
                       <tr
                         key={item.id}
                         style={{
@@ -341,7 +485,10 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
                         }}
                       >
                         <td style={{ padding: '12px', fontSize: '13px' }}>
-                          <div style={{ fontWeight: '600' }}>{item.codSubDepar ? `${item.codSubDepar.substring(4)} - ${item.nombre_subdepar || '-'}` : (item.nombre_subdepar || '-')}</div>
+                          <div style={{ fontWeight: '600' }}>{item.codSubDepar ? item.codSubDepar.substring(4) : '-'}</div>
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '13px' }}>
+                          <div style={{ fontWeight: '500' }}>{item.nombre_subdepar || '-'}</div>
                         </td>
                         <td style={{ padding: '12px', fontSize: '13px', fontWeight: '500' }}>
                           <div style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.proceso_nombre}>
@@ -367,12 +514,12 @@ const HistorialAuditoriaModal: FC<Props> = ({ show, onHide, hitoId, clienteId })
                         </td>
                         <td style={{ padding: '12px', fontSize: '13px' }}>
                           <code style={{ backgroundColor: '#f8f9fa', padding: '3px 6px', borderRadius: '4px', color: '#6c757d', border: '1px solid #dee2e6', whiteSpace: 'nowrap' }}>
-                            {item.fecha_limite_anterior || item.valor_anterior || '-'}
+                            {formatDateDisplay(item.fecha_limite_anterior || item.valor_anterior)}
                           </code>
                         </td>
                         <td style={{ padding: '12px', fontSize: '13px' }}>
                           <code style={{ backgroundColor: '#e8f5e9', padding: '3px 6px', borderRadius: '4px', color: '#105021', border: '1px solid #c8e6c9', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
-                            {item.fecha_limite_actual || item.valor_nuevo || '-'}
+                            {formatDateDisplay(item.fecha_limite_actual || item.valor_nuevo)}
                           </code>
                         </td>
                         <td style={{ padding: '12px', fontSize: '13px' }}>

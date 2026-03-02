@@ -12,6 +12,7 @@ import { KTCard, KTCardBody } from '../../../../_metronic/helpers'
 import { atisaStyles, getSecondaryButtonStyles, getTableHeaderStyles, getTableCellStyles } from '../../../styles/atisaStyles'
 import SharedPagination from '../../../components/pagination/SharedPagination'
 import { useParams, useNavigate } from 'react-router-dom'
+import { formatDateDisplay, formatDateTimeDisplay } from '../../../utils/dateFormatter'
 
 const HistorialAuditoria: FC = () => {
     const { clienteId } = useParams<{ clienteId: string }>()
@@ -154,26 +155,18 @@ const HistorialAuditoria: FC = () => {
     }
 
     const formatDate = (date: string) => {
-        if (!date) return '-'
-        const d = new Date(date)
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
+        return formatDateTimeDisplay(date)
     }
 
     const getCuboString = (item: AuditoriaCalendario) => item.codSubDepar ? `${item.codSubDepar.substring(4)} - ${item.nombre_subdepar || '-'}` : (item.nombre_subdepar || '-')
     const getValorAnterior = (item: AuditoriaCalendario) => {
-        if (item.campo_modificado === 'fecha_limite') return item.fecha_limite_anterior || item.valor_anterior || '-'
+        if (item.campo_modificado === 'fecha_limite' || item.campo_modificado === 'fecha_fin') return formatDateDisplay(item.fecha_limite_anterior || item.valor_anterior)
         const val = item.valor_anterior || '-'
         if (item.campo_modificado === 'hora_limite' && val !== '-' && val.length >= 5) return val.substring(0, 5)
         return val
     }
     const getValorActual = (item: AuditoriaCalendario) => {
-        if (item.campo_modificado === 'fecha_limite') return item.fecha_limite_actual || item.valor_nuevo || '-'
+        if (item.campo_modificado === 'fecha_limite' || item.campo_modificado === 'fecha_fin') return formatDateDisplay(item.fecha_limite_actual || item.valor_nuevo)
         const val = item.valor_nuevo || '-'
         if (item.campo_modificado === 'hora_limite' && val !== '-' && val.length >= 5) return val.substring(0, 5)
         return val
@@ -549,7 +542,7 @@ const HistorialAuditoria: FC = () => {
                             {/* Fechas de actualización */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <div>
-                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Rango / Desde</label>
+                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Creación Desde</label>
                                     <input
                                         type="date"
                                         className="form-control form-control-sm"
@@ -559,7 +552,7 @@ const HistorialAuditoria: FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Hasta</label>
+                                    <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Fecha Creación Hasta</label>
                                     <input
                                         type="date"
                                         className="form-control form-control-sm"
@@ -572,7 +565,7 @@ const HistorialAuditoria: FC = () => {
 
                             {/* Línea / Cubo */}
                             <div>
-                                <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubo</label>
+                                <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Cubo / Línea</label>
                                 <Select
                                     isMulti
                                     options={subdepartamentos.map((subdep) => ({
@@ -625,98 +618,142 @@ const HistorialAuditoria: FC = () => {
                             {/* Proceso */}
                             <div>
                                 <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Proceso</label>
-                                <select
-                                    className="form-select form-select-sm"
-                                    value={procesoFiltro}
-                                    onChange={(e) => setProcesoFiltro(e.target.value)}
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
-                                >
-                                    <option value="" style={{ color: 'black' }}>Todos los procesos</option>
-                                    {procesosCliente.map(p => (
-                                        <option key={p.id} value={p.nombre} style={{ color: 'black' }}>{p.nombre}</option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={procesosCliente.map(p => ({ value: p.nombre, label: p.nombre }))}
+                                    value={procesoFiltro ? { value: procesoFiltro, label: procesoFiltro } : null}
+                                    onChange={(opt: any) => setProcesoFiltro(opt ? opt.value : '')}
+                                    isClearable
+                                    placeholder="Seleccionar proceso..."
+                                    menuPortalTarget={document.body}
+                                    styles={{
+                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                        control: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                            borderColor: 'rgba(255, 255, 255, 0.25)',
+                                            color: 'white',
+                                            minHeight: '36px',
+                                            borderRadius: '8px'
+                                        }),
+                                        menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+                                            color: atisaStyles.colors.dark,
+                                            cursor: 'pointer',
+                                            fontSize: '13px'
+                                        }),
+                                        placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
+                                        input: (base) => ({ ...base, color: 'white' }),
+                                        singleValue: (base) => ({ ...base, color: 'white' }),
+                                        indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
+                                    }}
+                                />
                             </div>
 
                             {/* Hito */}
                             <div>
                                 <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '6px', display: 'block' }}>Hito</label>
-                                <select
-                                    className="form-select form-select-sm"
-                                    value={hitoFiltro}
-                                    onChange={(e) => setHitoFiltro(e.target.value)}
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', borderRadius: '8px' }}
-                                >
-                                    <option value="" style={{ color: 'black' }}>Todos los hitos</option>
-                                    {hitosCliente.map(h => (
-                                        <option key={h.id} value={h.nombre} style={{ color: 'black' }}>{h.nombre}</option>
-                                    ))}
-                                </select>
+                                <Select
+                                    options={hitosCliente.map(h => ({ value: h.nombre, label: h.nombre }))}
+                                    value={hitoFiltro ? { value: hitoFiltro, label: hitoFiltro } : null}
+                                    onChange={(opt: any) => setHitoFiltro(opt ? opt.value : '')}
+                                    isClearable
+                                    placeholder="Seleccionar hito..."
+                                    menuPortalTarget={document.body}
+                                    styles={{
+                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                        control: (base) => ({
+                                            ...base,
+                                            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                            borderColor: 'rgba(255, 255, 255, 0.25)',
+                                            color: 'white',
+                                            minHeight: '36px',
+                                            borderRadius: '8px'
+                                        }),
+                                        menu: (base) => ({ ...base, backgroundColor: 'white', zIndex: 9999 }),
+                                        option: (base, state) => ({
+                                            ...base,
+                                            backgroundColor: state.isFocused ? atisaStyles.colors.light : 'white',
+                                            color: atisaStyles.colors.dark,
+                                            cursor: 'pointer',
+                                            fontSize: '13px'
+                                        }),
+                                        placeholder: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px' }),
+                                        input: (base) => ({ ...base, color: 'white' }),
+                                        singleValue: (base) => ({ ...base, color: 'white' }),
+                                        indicatorSeparator: (base) => ({ ...base, backgroundColor: 'rgba(255, 255, 255, 0.3)' }),
+                                        dropdownIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' }),
+                                        clearIndicator: (base) => ({ ...base, color: 'rgba(255, 255, 255, 0.7)' })
+                                    }}
+                                />
                             </div>
 
                             {/* Crítico / Obligatorio */}
                             <div>
                                 <label style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px', display: 'block' }}>Características del hito</label>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                        {[
-                                            { value: '', label: 'Todos', icon: 'bi-list-ul' },
-                                            { value: 'true', label: 'Crítico', icon: 'bi-exclamation-triangle-fill', color: atisaStyles.colors.error },
-                                            { value: 'false', label: 'No crítico', icon: 'bi-check-circle', color: 'rgba(255,255,255,0.5)' },
-                                        ].map(opt => (
-                                            <div
-                                                key={`crit-${opt.value}`}
-                                                onClick={() => setClaveFiltro(opt.value)}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    backgroundColor: claveFiltro === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
-                                                    color: claveFiltro === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
-                                                    border: `1px solid ${opt.color || 'white'}`,
-                                                    padding: '5px 12px',
-                                                    borderRadius: '20px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    opacity: claveFiltro === opt.value ? 1 : 0.65,
-                                                    transition: 'all 0.2s ease',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '5px'
-                                                }}
-                                            >
-                                                <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
-                                                {opt.label}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-                                        {[
-                                            { value: '', label: 'Todos', icon: 'bi-list-ul' },
-                                            { value: 'true', label: 'Obligatorio', icon: 'bi-asterisk', color: atisaStyles.colors.accent },
-                                            { value: 'false', label: 'No obligatorio', icon: 'bi-x-circle', color: 'rgba(255,255,255,0.5)' },
-                                        ].map(opt => (
-                                            <div
-                                                key={`obl-${opt.value}`}
-                                                onClick={() => setObligatorioFiltro(opt.value)}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    backgroundColor: obligatorioFiltro === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
-                                                    color: obligatorioFiltro === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
-                                                    border: `1px solid ${opt.color || 'white'}`,
-                                                    padding: '5px 12px',
-                                                    borderRadius: '20px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    opacity: obligatorioFiltro === opt.value ? 1 : 0.65,
-                                                    transition: 'all 0.2s ease',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '5px'
-                                                }}
-                                            >
-                                                <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
-                                                {opt.label}
-                                            </div>
-                                        ))}
-                                    </div>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {[
+                                        { value: '', label: 'Todos', icon: 'bi-list-ul' },
+                                        { value: 'true', label: 'Crítico', icon: 'bi-exclamation-triangle-fill', color: atisaStyles.colors.error },
+                                        { value: 'false', label: 'No crítico', icon: 'bi-check-circle', color: 'rgba(255,255,255,0.5)' },
+                                    ].map(opt => (
+                                        <div
+                                            key={`crit-${opt.value}`}
+                                            onClick={() => setClaveFiltro(opt.value)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                backgroundColor: claveFiltro === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
+                                                color: claveFiltro === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
+                                                border: `1px solid ${opt.color || 'white'}`,
+                                                padding: '5px 12px',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                opacity: claveFiltro === opt.value ? 1 : 0.65,
+                                                transition: 'all 0.2s ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px'
+                                            }}
+                                        >
+                                            <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
+                                            {opt.label}
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                    {[
+                                        { value: '', label: 'Todos', icon: 'bi-list-ul' },
+                                        { value: 'true', label: 'Obligatorio', icon: 'bi-asterisk', color: atisaStyles.colors.accent },
+                                        { value: 'false', label: 'No obligatorio', icon: 'bi-x-circle', color: 'rgba(255,255,255,0.5)' },
+                                    ].map(opt => (
+                                        <div
+                                            key={`obl-${opt.value}`}
+                                            onClick={() => setObligatorioFiltro(opt.value)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                backgroundColor: obligatorioFiltro === opt.value ? (opt.color || 'white') : 'rgba(255,255,255,0.1)',
+                                                color: obligatorioFiltro === opt.value ? (opt.color ? 'white' : atisaStyles.colors.primary) : 'white',
+                                                border: `1px solid ${opt.color || 'white'}`,
+                                                padding: '5px 12px',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                opacity: obligatorioFiltro === opt.value ? 1 : 0.65,
+                                                transition: 'all 0.2s ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px'
+                                            }}
+                                        >
+                                            <i className={`bi ${opt.icon}`} style={{ fontSize: '11px' }}></i>
+                                            {opt.label}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             {/* Fechas Límite Ant/Act */}
@@ -957,6 +994,7 @@ const HistorialAuditoria: FC = () => {
                                         }}
                                     >
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('cubo')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Cubo {getSortIcon('cubo')}</th>
+                                        <th className='cursor-pointer user-select-none' onClick={() => handleSort('nombre_subdepar')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Línea {getSortIcon('nombre_subdepar')}</th>
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('proceso')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Proceso {getSortIcon('proceso')}</th>
                                         <th className='cursor-pointer user-select-none' onClick={() => handleSort('hito')} style={{ ...getTableHeaderStyles(), transition: 'all 0.2s' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.accent; e.currentTarget.style.color = 'white' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.light; e.currentTarget.style.color = atisaStyles.colors.primary }}>Hito {getSortIcon('hito')}</th>
 
@@ -989,7 +1027,8 @@ const HistorialAuditoria: FC = () => {
                                                 e.currentTarget.style.boxShadow = 'none'
                                             }}
                                         >
-                                            <td style={{ ...getTableCellStyles(), fontWeight: '600' }}>{getCuboString(item)}</td>
+                                            <td style={{ ...getTableCellStyles(), fontWeight: '600' }}>{item.codSubDepar ? item.codSubDepar.substring(4) : '-'}</td>
+                                            <td style={{ ...getTableCellStyles(), fontWeight: '500' }}>{item.nombre_subdepar || '-'}</td>
                                             <td style={getTableCellStyles()}>
                                                 <div style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '500' }} title={item.proceso_nombre}>
                                                     {item.proceso_nombre}
