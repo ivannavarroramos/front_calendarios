@@ -1,10 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
-import { FC, useState, useEffect, createContext, useContext, Dispatch, SetStateAction } from 'react'
-import { LayoutSplashScreen } from '../../../../_metronic/layout/core'
+import { FC, useState, useEffect, createContext, useContext, Dispatch, SetStateAction, ReactNode } from 'react'
 import { AuthModel, UserModel } from './_models'
 import * as authHelper from './AuthHelpers'
-import { WithChildren } from '../../../../_metronic/helpers'
 import { getRoleByEmail } from '../../../api/apiRoles'
+
+type WithChildren = { children?: ReactNode }
 
 type AuthContextProps = {
   auth: AuthModel | undefined
@@ -137,7 +137,12 @@ const AuthInit: FC<WithChildren> = ({ children }) => {
     }
   }, [auth, isAdminCheckDone])
 
-  return showSplashScreen ? <LayoutSplashScreen /> : <>{children}</>
+  return showSplashScreen ? (
+    <div className="atisa-splash">
+      <div className="atisa-splash__logo"><i className="fa-solid fa-shield-halved"></i></div>
+      <div className="atisa-splash__text">Cargando...</div>
+    </div>
+  ) : <>{children}</>
 }
 
 export { AuthProvider, AuthInit, useAuth }

@@ -6,7 +6,6 @@ import { GenerarCalendarioParams } from '../../../api/clienteProcesos'
 import Select from 'react-select'
 import { getProcesosByPlantilla } from '../../../api/plantillaProcesos'
 import { Proceso } from '../../../api/procesos'
-import { KTSVG } from '../../../../_metronic/helpers'
 import { atisaStyles } from '../../../styles/atisaStyles'
 
 interface Props {

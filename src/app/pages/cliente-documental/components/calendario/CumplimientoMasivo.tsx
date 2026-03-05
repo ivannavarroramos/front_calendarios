@@ -7,6 +7,7 @@ import { useAuth } from '../../../../modules/auth/core/Auth'
 import SharedPagination from '../../../../components/pagination/SharedPagination'
 import CumplimentarHitosMasivoModal from './CumplimentarHitosMasivoModal'
 import { getAllSubdepartamentos, Subdepartamento } from '../../../../api/subdepartamentos'
+import PageHeader from '../../../../components/ui/PageHeader'
 
 
 
@@ -438,132 +439,111 @@ const CumplimientoMasivo: FC = () => {
     }
 
     return (
-        <div style={{
-            fontFamily: atisaStyles.fonts.secondary,
-            backgroundColor: '#f8f9fa',
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column'
-        }}>
-            {/* Header */}
-            <header
-                style={{
-                    background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-                    color: 'white',
-                    boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-                    width: '100%'
-                }}
-            >
-                <div style={{ padding: '24px 24px 20px 24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <button
-                                className="btn"
-                                onClick={() => navigate(-1)}
-                                style={getSecondaryButtonStyles()}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'white'
-                                    e.currentTarget.style.color = atisaStyles.colors.primary
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'transparent'
-                                    e.currentTarget.style.color = 'white'
-                                }}
-                            >
-                                <i className="bi bi-arrow-left" style={{ color: 'inherit' }}></i>
-                                Volver a Gestor Documental / Clientes
-                            </button>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                            <h2 style={{
-                                fontFamily: atisaStyles.fonts.primary,
-                                fontWeight: 'bold',
+        <div
+            className="container-fluid"
+            style={{
+                fontFamily: atisaStyles.fonts.secondary,
+                backgroundColor: '#f8f9fa',
+                minHeight: '100vh',
+                padding: '20px'
+            }}
+        >
+            <PageHeader
+                title="Cumplimiento Masivo de Hitos"
+                subtitle="Gestión agrupada de estados y evidencias"
+                icon="check-all"
+                backButton={
+                    <button
+                        className="btn"
+                        onClick={() => navigate(-1)}
+                        style={getSecondaryButtonStyles()}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'white'
+                            e.currentTarget.style.color = atisaStyles.colors.primary
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.color = 'white'
+                        }}
+                    >
+                        <i className="bi bi-arrow-left"></i>
+                        Volver
+                    </button>
+                }
+                actions={
+                    <div className="d-flex gap-3">
+                        <button
+                            className="btn"
+                            onClick={() => setShowFilters(true)}
+                            style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
                                 color: 'white',
-                                margin: 0,
-                                fontSize: '1.75rem',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                borderRadius: '8px',
+                                fontFamily: atisaStyles.fonts.secondary,
+                                fontWeight: '600',
+                                padding: '8px 16px',
+                                fontSize: '14px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '12px'
-                            }}>
-                                <i className="bi bi-check-all"></i>
-                                Cumplimiento Masivo de Hitos
-                            </h2>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button
-                                className="btn"
-                                onClick={() => setShowFilters(true)}
-                                style={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '8px 16px',
-                                    fontSize: '14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    transition: 'all 0.3s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                                }}
-                            >
-                                <i className="bi bi-funnel-fill" style={{ color: 'white' }}></i>
-                                Filtros
-                            </button>
-                            <button
-                                type="button"
-                                className="btn"
-                                onClick={() => setShowCumplimentarModal(true)}
-                                disabled={selectedIds.length === 0}
-                                style={{
-                                    backgroundColor: selectedIds.length === 0 ? 'rgba(255, 255, 255, 0.2)' : atisaStyles.colors.secondary,
-                                    color: 'white',
-                                    border: selectedIds.length === 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '8px 16px',
-                                    fontSize: '14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    transition: 'all 0.3s ease',
-                                    opacity: selectedIds.length === 0 ? 0.7 : 1,
-                                    cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer'
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (selectedIds.length > 0) {
-                                        e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                                        e.currentTarget.style.transform = 'translateY(-2px)'
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (selectedIds.length > 0) {
-                                        e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                                        e.currentTarget.style.transform = 'translateY(0)'
-                                    }
-                                }}
-                            >
-                                <i className="bi bi-file-earmark-check" style={{ color: 'white' }}></i>
-                                Cumplimentar {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}
-                            </button>
-                        </div>
+                                gap: '8px',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                            }}
+                        >
+                            <i className="bi bi-funnel-fill" style={{ color: 'white' }}></i>
+                            Filtros
+                        </button>
+                        <button
+                            type="button"
+                            className="btn"
+                            onClick={() => setShowCumplimentarModal(true)}
+                            disabled={selectedIds.length === 0}
+                            style={{
+                                backgroundColor: selectedIds.length === 0 ? 'rgba(255, 255, 255, 0.2)' : atisaStyles.colors.secondary,
+                                color: 'white',
+                                border: selectedIds.length === 0 ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+                                borderRadius: '8px',
+                                fontFamily: atisaStyles.fonts.secondary,
+                                fontWeight: '600',
+                                padding: '8px 16px',
+                                fontSize: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                transition: 'all 0.3s ease',
+                                opacity: selectedIds.length === 0 ? 0.7 : 1,
+                                cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer',
+                                boxShadow: selectedIds.length > 0 ? '0 4px 12px rgba(156, 186, 57, 0.3)' : 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (selectedIds.length > 0) {
+                                    e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
+                                    e.currentTarget.style.transform = 'translateY(-2px)'
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (selectedIds.length > 0) {
+                                    e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                }
+                            }}
+                        >
+                            <i className="bi bi-file-earmark-check" style={{ color: 'white' }}></i>
+                            Cumplimentar {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}
+                        </button>
                     </div>
-                </div>
-            </header>
+                }
+            />
 
-            {/* Content */}
-            <div className="container-fluid p-4">
-                <div className="card shadow-sm border-0 mb-4">
-                    <div className="card-body">
+            <div className="card shadow-sm border-0 mb-4" style={{ borderRadius: '12px', overflow: 'hidden' }}>
+                <div className="card-body p-0">
+                    <div className="p-6">
 
 
                         {/* Contador */}

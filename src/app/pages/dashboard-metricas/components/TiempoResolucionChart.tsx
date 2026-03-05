@@ -1,7 +1,5 @@
 import React, {useEffect, useRef} from 'react'
 import ApexCharts, {ApexOptions} from 'apexcharts'
-import {getCSSVariableValue} from '../../../../_metronic/assets/ts/_utils'
-import {useThemeMode} from '../../../../_metronic/partials/layout/theme-mode/ThemeModeProvider'
 import {ResolucionData} from '../../../api/metricas'
 
 type Props = {
@@ -11,7 +9,7 @@ type Props = {
 
 const TiempoResolucionChart: React.FC<Props> = ({className, resolucionData}) => {
   const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+  const {mode} = { mode: "light" }
   
   const refreshMode = () => {
     if (!chartRef.current) {
@@ -44,10 +42,10 @@ const TiempoResolucionChart: React.FC<Props> = ({className, resolucionData}) => 
 }
 
 function getChartOptions(resolucionData: ResolucionData[]): ApexOptions {
-  const labelColor = getCSSVariableValue('--bs-gray-500')
-  const borderColor = getCSSVariableValue('--bs-gray-200')
-  const baseColor = getCSSVariableValue('--bs-info')
-  const lightColor = getCSSVariableValue('--bs-info-light')
+  const labelColor = '#64748B'
+  const borderColor = '#E2E8F0'
+  const baseColor = 'var(--atisa-accent)'
+  const lightColor = '#E6F6FB'
 
   const categories = resolucionData.map(item => item.periodo)
   const data = resolucionData.map(item => item.tiempoMedio)

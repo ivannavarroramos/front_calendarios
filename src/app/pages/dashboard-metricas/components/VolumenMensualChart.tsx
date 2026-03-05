@@ -1,7 +1,5 @@
 import React, {useEffect, useRef} from 'react'
 import ApexCharts, {ApexOptions} from 'apexcharts'
-import {getCSS, getCSSVariableValue} from '../../../../_metronic/assets/ts/_utils'
-import {useThemeMode} from '../../../../_metronic/partials/layout/theme-mode/ThemeModeProvider'
 import {VolumenData} from '../../../api/metricas'
 
 type Props = {
@@ -11,14 +9,14 @@ type Props = {
 
 const VolumenMensualChart: React.FC<Props> = ({className, volumenData}) => {
   const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+  const {mode} = { mode: "light" }
 
   const refreshChart = () => {
     if (!chartRef.current) {
       return
     }
 
-    const height = parseInt(getCSS(chartRef.current, 'height'))
+    const height = parseInt(window.getComputedStyle(chartRef.current).height)
     const chart = new ApexCharts(chartRef.current, getChartOptions(height, volumenData))
     if (chart) {
       chart.render()
@@ -45,11 +43,11 @@ const VolumenMensualChart: React.FC<Props> = ({className, volumenData}) => {
 }
 
 function getChartOptions(height: number, volumenData: VolumenData[]): ApexOptions {
-  const labelColor = getCSSVariableValue('--bs-gray-500')
-  const borderColor = getCSSVariableValue('--bs-gray-200')
-  const baseColor = getCSSVariableValue('--bs-primary')
-  const baseLightColor = getCSSVariableValue('--bs-primary-light')
-  const secondaryColor = getCSSVariableValue('--bs-info')
+  const labelColor = '#64748B'
+  const borderColor = '#E2E8F0'
+  const baseColor = 'var(--atisa-primary)'
+  const baseLightColor = '#E6F0F2'
+  const secondaryColor = 'var(--atisa-accent)'
 
   const categories = volumenData.map(item => item.mes)
   const creadosData = volumenData.map(item => item.hitosCreados)

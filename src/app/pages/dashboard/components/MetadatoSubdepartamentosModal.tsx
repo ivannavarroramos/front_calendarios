@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap'
-import { KTSVG } from '../../../../_metronic/helpers'
 import { MetadatoArea, deleteMetadatoArea } from '../../../api/metadatosArea'
 import { Metadato } from '../../../api/metadatos'
 import { Subdepartamento } from '../../../api/subdepartamentos'
@@ -170,7 +169,7 @@ const MetadatoSubdepartamentosModal: FC<Props> = ({
           Administrar Departamentos - {getMetadatoName(selectedMetadatoId)}
         </Modal.Title>
         <div className='btn btn-icon btn-sm btn-active-icon-primary' onClick={onHide}>
-          <KTSVG className='svg-icon-1' path='/media/icons/duotune/arrows/arr061.svg' />
+          <i className="bi bi-x-lg fs-4"></i>
         </div>
       </Modal.Header>
 

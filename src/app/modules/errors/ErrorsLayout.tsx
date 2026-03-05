@@ -1,37 +1,28 @@
-import {useEffect} from 'react'
-import {Outlet} from 'react-router-dom'
-import {useThemeMode} from '../../../_metronic/partials'
-import {toAbsoluteUrl} from '../../../_metronic/helpers'
+import { Outlet } from 'react-router-dom'
 
-const BODY_CLASSES = ['bgi-size-cover', 'bgi-position-center', 'bgi-no-repeat']
 const ErrorsLayout = () => {
-  const {mode} = useThemeMode()
-  useEffect(() => {
-    BODY_CLASSES.forEach((c) => document.body.classList.add(c))
-    document.body.style.backgroundImage =
-      mode === 'dark'
-        ? `url(${toAbsoluteUrl('media/auth/bg7-dark.jpg')})`
-        : `url(${toAbsoluteUrl('media/auth/bg7.jpg')})`
-
-    return () => {
-      BODY_CLASSES.forEach((c) => document.body.classList.remove(c))
-      document.body.style.backgroundImage = 'none'
-    }
-  }, [mode])
-
   return (
-    <div className='d-flex flex-column flex-root'>
-      <div className='d-flex flex-column flex-center flex-column-fluid'>
-        <div className='d-flex flex-column flex-center text-center p-10'>
-          <div className='card card-flush  w-lg-650px py-5'>
-            <div className='card-body py-15 py-lg-20'>
-              <Outlet />
-            </div>
-          </div>
-        </div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--atisa-bg-body)',
+      padding: '2rem'
+    }}>
+      <div className='card shadow-sm border-0' style={{
+        maxWidth: '500px',
+        width: '100%',
+        borderRadius: 'var(--radius-lg)',
+        borderTop: '4px solid var(--atisa-primary)',
+        textAlign: 'center',
+        padding: '3rem 2rem'
+      }}>
+        <Outlet />
       </div>
     </div>
   )
 }
 
-export {ErrorsLayout}
+export { ErrorsLayout }

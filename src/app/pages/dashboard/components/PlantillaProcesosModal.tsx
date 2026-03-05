@@ -1,6 +1,5 @@
 import { FC, useState, useEffect, useCallback, useMemo } from 'react'
 import { Modal, Alert, Spinner } from 'react-bootstrap'
-import { KTSVG } from '../../../../_metronic/helpers'
 import { PlantillaProcesos } from '../../../api/plantillaProcesos'
 import { Plantilla } from '../../../api/plantillas'
 import { Proceso } from '../../../api/procesos'

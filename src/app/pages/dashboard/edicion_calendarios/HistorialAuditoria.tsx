@@ -8,11 +8,11 @@ import { getAllProcesos } from '../../../api/procesos'
 import { getAllHitos } from '../../../api/hitos'
 import { getAllSubdepartamentos, Subdepartamento } from '../../../api/subdepartamentos'
 import Select from 'react-select'
-import { KTCard, KTCardBody } from '../../../../_metronic/helpers'
 import { atisaStyles, getSecondaryButtonStyles, getTableHeaderStyles, getTableCellStyles } from '../../../styles/atisaStyles'
 import SharedPagination from '../../../components/pagination/SharedPagination'
 import { useParams, useNavigate } from 'react-router-dom'
 import { formatDateDisplay, formatDateTimeDisplay } from '../../../utils/dateFormatter'
+import PageHeader from '../../../components/ui/PageHeader'
 
 const HistorialAuditoria: FC = () => {
     const { clienteId } = useParams<{ clienteId: string }>()
@@ -286,185 +286,70 @@ const HistorialAuditoria: FC = () => {
 
     return (
         <div
-            className="calendario-cliente-container"
+            className="container-fluid"
             style={{
                 fontFamily: atisaStyles.fonts.secondary,
+                backgroundColor: '#f8f9fa',
+                minHeight: '100vh',
+                padding: '20px',
                 display: 'flex',
-                flexDirection: 'column',
-                height: '100vh',
-                backgroundColor: '#f5f8fa',
-                overflow: 'hidden',
-                margin: 0,
-                width: '100%'
+                flexDirection: 'column'
             }}
         >
-            <header
-                className="calendario-header"
-                style={{
-                    background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-                    color: 'white',
-                    boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 1000,
-                    width: '100%'
-                }}
-            >
-                <div
-                    className="header-title-section"
-                    style={{
-                        padding: '32px 24px'
-                    }}
-                >
-                    <div
-                        className="header-content"
+            <PageHeader
+                title="Historial de Auditoría"
+                subtitle={clienteNombre || clienteId}
+                icon="clock-history"
+                backButton={
+                    <button
+                        className="btn btn-sm btn-light"
+                        onClick={() => navigate(`/edicion-calendario/${clienteId}`)}
                         style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr auto 1fr',
+                            fontWeight: '600',
+                            color: atisaStyles.colors.primary,
+                            backgroundColor: 'white',
+                            border: `1px solid ${atisaStyles.colors.light}`,
+                            borderRadius: '8px',
+                            display: 'flex',
                             alignItems: 'center',
-                            gap: '1rem',
-                            maxWidth: '100%',
-                            margin: '0 auto'
+                            gap: '8px'
                         }}
                     >
-                        {/* Columna izquierda: Botón Volver */}
-                        <div className='d-flex align-items-center gap-3' style={{ justifyContent: 'flex-start' }}>
-                            <button
-                                className="back-button"
-                                onClick={() => navigate(`/edicion-calendario/${clienteId}`)}
-                                style={getSecondaryButtonStyles()}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'white'
-                                    e.currentTarget.style.color = atisaStyles.colors.primary
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'transparent'
-                                    e.currentTarget.style.color = 'white'
-                                }}
-                            >
-                                <i className="bi bi-arrow-left me-2" style={{ color: 'inherit' }}></i>
-                                Volver a Edición
-                            </button>
-                        </div>
-
-                        {/* Columna centro: Título y Cliente */}
-                        <div
-                            className="title-section"
+                        <i className="bi bi-arrow-left"></i>
+                        Volver a Edición
+                    </button>
+                }
+                actions={
+                    <div className="d-flex align-items-center gap-2">
+                        {activeFiltersCount > 0 && (
+                            <span className="badge rounded-pill bg-danger">
+                                {activeFiltersCount}
+                            </span>
+                        )}
+                        <button
+                            className="btn btn-sm"
+                            onClick={() => setShowFilters(!showFilters)}
                             style={{
-                                textAlign: 'center',
+                                backgroundColor: showFilters ? atisaStyles.colors.primary : 'white',
+                                color: showFilters ? 'white' : atisaStyles.colors.primary,
+                                border: `1px solid ${atisaStyles.colors.primary}`,
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                padding: '8px 16px',
                                 display: 'flex',
-                                flexDirection: 'column',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                gap: '8px'
                             }}
                         >
-                            <h1
-                                style={{
-                                    fontFamily: atisaStyles.fonts.primary,
-                                    fontWeight: 'bold',
-                                    color: 'white',
-                                    margin: 0,
-                                    fontSize: '2rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                <i className="bi bi-clock-history" style={{ color: 'white' }}></i>
-                                Historial de Auditoría
-                            </h1>
-                            <p
-                                style={{
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    color: atisaStyles.colors.light,
-                                    margin: '8px 0 0 0',
-                                    fontSize: '1.2rem',
-                                    fontWeight: '500',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: '100%'
-                                }}
-                            >
-                                {clienteNombre || clienteId}
-                            </p>
-                        </div>
-
-                        {/* Columna derecha: Acciones */}
-                        <div
-                            className="header-actions"
-                            style={{
-                                display: 'flex',
-                                gap: '8px',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                justifyContent: 'flex-end'
-                            }}
-                        >
-                            {activeFiltersCount > 0 && (
-                                <span style={{
-                                    backgroundColor: '#f1416c',
-                                    color: 'white',
-                                    borderRadius: '12px',
-                                    padding: '2px 10px',
-                                    fontSize: '12px',
-                                    fontWeight: '700'
-                                }}>
-                                    {activeFiltersCount}
-                                </span>
-                            )}
-                            <button
-                                className="btn btn-sm"
-                                onClick={() => setShowFilters(!showFilters)}
-                                style={{
-                                    backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '8px 16px',
-                                    fontSize: '14px',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                <i className="bi bi-funnel" style={{ color: 'white' }}></i>
-                                Filtros
-                            </button>
-                        </div>
+                            <i className={`bi bi-funnel${showFilters ? '-fill' : ''}`}></i>
+                            Filtros
+                        </button>
                     </div>
-                </div>
-            </header>
+                }
+            />
 
-            <div
-                className="main-layout"
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: 1,
-                    padding: '0rem',
-                    width: '100%',
-                    overflow: 'auto'
-                }}
-            >
-                <main
-                    className="content-area"
-                    style={{
-                        width: '100%',
-                        backgroundColor: 'white',
-                        borderRadius: '12px',
-                        padding: '0',
-                        boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-                        minHeight: 'auto',
-                        display: 'flex',
-                        flexDirection: 'column'
-                    }}
-                >
+            <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', overflow: 'hidden' }}>
+                <div className="card-body p-0">
 
 
 
@@ -1132,11 +1017,11 @@ const HistorialAuditoria: FC = () => {
                                 currentPage={currentPage}
                                 totalItems={auditoriaProcesada.length}
                                 pageSize={itemsPerPage}
-                                onPageChange={(page) => setCurrentPage(page)}
+                                onPageChange={(page: number) => setCurrentPage(page)}
                             />
                         </div>
                     )}
-                </main>
+                </div>
             </div>
         </div>
     )

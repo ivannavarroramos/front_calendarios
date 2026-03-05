@@ -1,7 +1,5 @@
 import React, {useEffect, useRef} from 'react'
 import ApexCharts, {ApexOptions} from 'apexcharts'
-import {getCSS, getCSSVariableValue} from '../../../../_metronic/assets/ts/_utils'
-import {useThemeMode} from '../../../../_metronic/partials/layout/theme-mode/ThemeModeProvider'
 import {ProcesoData} from '../../../api/metricas'
 
 type Props = {
@@ -11,7 +9,7 @@ type Props = {
 
 const HitosPorProcesoChart: React.FC<Props> = ({className, procesoData}) => {
   const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+  const {mode} = { mode: "light" }
 
   useEffect(() => {
     const chart = refreshChart()
@@ -28,7 +26,7 @@ const HitosPorProcesoChart: React.FC<Props> = ({className, procesoData}) => {
       return
     }
 
-    const height = parseInt(getCSS(chartRef.current, 'height'))
+    const height = parseInt(window.getComputedStyle(chartRef.current).height)
     const chart = new ApexCharts(chartRef.current, getChartOptions(height, procesoData))
     if (chart) {
       chart.render()
@@ -45,10 +43,10 @@ const HitosPorProcesoChart: React.FC<Props> = ({className, procesoData}) => {
 }
 
 function getChartOptions(height: number, procesoData: ProcesoData[]): ApexOptions {
-  const labelColor = getCSSVariableValue('--bs-gray-500')
-  const borderColor = getCSSVariableValue('--bs-gray-200')
-  const baseColor = getCSSVariableValue('--bs-primary')
-  const secondaryColor = getCSSVariableValue('--bs-gray-300')
+  const labelColor = '#64748B'
+  const borderColor = '#E2E8F0'
+  const baseColor = 'var(--atisa-primary)'
+  const secondaryColor = '#CBD5E1'
 
   const categories = procesoData.map(item => item.nombreProceso)
   const completadosData = procesoData.map(item => item.hitosCompletados)

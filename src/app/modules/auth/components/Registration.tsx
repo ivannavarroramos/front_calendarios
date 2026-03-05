@@ -1,14 +1,12 @@
 
 
-import {useState, useEffect} from 'react'
-import {useFormik} from 'formik'
+import { useState, useEffect } from 'react'
+import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import clsx from 'clsx'
-import {register} from '../core/_requests'
-import {Link} from 'react-router-dom'
-import {toAbsoluteUrl} from '../../../../_metronic/helpers'
-import {PasswordMeterComponent} from '../../../../_metronic/assets/ts/components'
-import {useAuth} from '../core/Auth'
+import { register } from '../core/_requests'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../core/Auth'
 
 const initialValues = {
   firstname: '',
@@ -47,14 +45,14 @@ const registrationSchema = Yup.object().shape({
 
 export function Registration() {
   const [loading, setLoading] = useState(false)
-  const {saveAuth, setCurrentUser} = useAuth()
+  const { saveAuth, setCurrentUser } = useAuth()
   const formik = useFormik({
     initialValues,
     validationSchema: registrationSchema,
-    onSubmit: async (values, {setStatus, setSubmitting}) => {
+    onSubmit: async (values, { setStatus, setSubmitting }) => {
       setLoading(true)
       try {
-        const {data: auth} = await register(
+        const { data: auth } = await register(
           values.email,
           values.firstname,
           values.lastname,
@@ -74,7 +72,7 @@ export function Registration() {
   })
 
   useEffect(() => {
-    PasswordMeterComponent.bootstrap()
+    // Password meter removed (was Metronic component)
   }, [])
 
   return (
@@ -86,62 +84,9 @@ export function Registration() {
     >
       {/* begin::Heading */}
       <div className='text-center mb-11'>
-        {/* begin::Title */}
-        <h1 className='text-gray-900 fw-bolder mb-3'>Sign Up</h1>
-        {/* end::Title */}
-
-        <div className='text-gray-500 fw-semibold fs-6'>Your Social Campaigns</div>
+        <h1 className='fw-bolder mb-3' style={{ color: 'var(--atisa-dark)', fontFamily: 'var(--font-headings)' }}>Registro</h1>
       </div>
       {/* end::Heading */}
-
-      {/* begin::Login options */}
-      <div className='row g-3 mb-9'>
-        {/* begin::Col */}
-        <div className='col-md-6'>
-          {/* begin::Google link */}
-          <a
-            href='#'
-            className='btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100'
-          >
-            <img
-              alt='Logo'
-              src={toAbsoluteUrl('media/svg/brand-logos/google-icon.svg')}
-              className='h-15px me-3'
-            />
-            Sign in with Google
-          </a>
-          {/* end::Google link */}
-        </div>
-        {/* end::Col */}
-
-        {/* begin::Col */}
-        <div className='col-md-6'>
-          {/* begin::Google link */}
-          <a
-            href='#'
-            className='btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100'
-          >
-            <img
-              alt='Logo'
-              src={toAbsoluteUrl('media/svg/brand-logos/apple-black.svg')}
-              className='theme-light-show h-15px me-3'
-            />
-            <img
-              alt='Logo'
-              src={toAbsoluteUrl('media/svg/brand-logos/apple-black-dark.svg')}
-              className='theme-dark-show h-15px me-3'
-            />
-            Sign in with Apple
-          </a>
-          {/* end::Google link */}
-        </div>
-        {/* end::Col */}
-      </div>
-      {/* end::Login options */}
-
-      <div className='separator separator-content my-14'>
-        <span className='w-125px text-gray-500 fw-semibold fs-7'>Or with email</span>
-      </div>
 
       {formik.status && (
         <div className='mb-lg-15 alert alert-danger'>
@@ -214,7 +159,7 @@ export function Registration() {
           {...formik.getFieldProps('email')}
           className={clsx(
             'form-control bg-transparent',
-            {'is-invalid': formik.touched.email && formik.errors.email},
+            { 'is-invalid': formik.touched.email && formik.errors.email },
             {
               'is-valid': formik.touched.email && !formik.errors.email,
             }
@@ -345,7 +290,7 @@ export function Registration() {
         >
           {!loading && <span className='indicator-label'>Submit</span>}
           {loading && (
-            <span className='indicator-progress' style={{display: 'block'}}>
+            <span className='indicator-progress' style={{ display: 'block' }}>
               Please wait...{' '}
               <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
             </span>

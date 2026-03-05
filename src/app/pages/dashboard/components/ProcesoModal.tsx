@@ -1,6 +1,5 @@
 import {FC, useEffect, useState} from 'react'
 import {Modal} from 'react-bootstrap'
-import {KTSVG} from '../../../../_metronic/helpers'
 import {Proceso} from '../../../api/procesos'
 import {atisaStyles} from '../../../styles/atisaStyles'
 

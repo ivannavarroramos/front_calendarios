@@ -1,15 +1,17 @@
-// Estilos corporativos Atisa - Reutilizables en todas las vistas
 export const atisaStyles = {
   colors: {
-    primary: '#00505C',      // Verde oscuro (Pantone 3165 C)
-    secondary: '#9CBA39',    // Verde claro (Pantone 375 C)
-    accent: '#00A1DE',       // Azul (Pantone 299 C)
-    light: '#80E0D3',        // Verde claro secundario (Pantone 3245 C)
-    dark: '#007C92',         // Verde oscuro secundario (Pantone 3145 C)
-    warning: '#F1E800',      // Amarillo (Pantone 3945 C)
-    error: '#D9214E',        // Rojo (Pantone 1795 C aprox)
-    info: '#00A1DE',         // Azul (Pantone 299 C)
-    success: '#9CBA39',      // Verde claro (Pantone 375 C)
+    primary: '#00505C',      // Verde oscuro (Corporativo Principal)
+    secondary: '#9CBA39',    // Verde claro (Corporativo)
+    accent: '#00A1DE',       // Azul (Corporativo)
+    white: '#FFFFFF',        // Blanco
+    danger: '#DC2626',       // Rojo (Semántica)
+    error: '#DC2626',        // Alias para semántica
+    warning: '#F59E0B',      // Ámbar (Semántica)
+    info: '#00A1DE',         // Azul (Semántica)
+    success: '#9CBA39',      // Verde (Semántica)
+    background: '#F0F4F7',   // Fondo neutro
+    dark: '#00505C',         // Consistent with primary
+    light: '#FFFFFF',        // Consistent with white
   },
   fonts: {
     primary: 'Aleo, Georgia, serif',

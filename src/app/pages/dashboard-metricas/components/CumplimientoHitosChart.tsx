@@ -1,7 +1,5 @@
 import React, {useEffect, useRef} from 'react'
 import ApexCharts, {ApexOptions} from 'apexcharts'
-import {getCSSVariableValue} from '../../../../_metronic/assets/ts/_utils'
-import {useThemeMode} from '../../../../_metronic/partials/layout/theme-mode/ThemeModeProvider'
 
 type Props = {
   className?: string
@@ -12,7 +10,7 @@ type Props = {
 
 const CumplimientoHitosChart: React.FC<Props> = ({className, chartColor, chartHeight, porcentaje}) => {
   const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+  const {mode} = { mode: "light" }
 
   const refreshChart = () => {
     if (!chartRef.current) {
@@ -62,9 +60,9 @@ const CumplimientoHitosChart: React.FC<Props> = ({className, chartColor, chartHe
 }
 
 const chartOptions = (chartColor: string, chartHeight: string, porcentaje: number): ApexOptions => {
-  const baseColor = getCSSVariableValue('--bs-' + chartColor)
-  const lightColor = getCSSVariableValue('--bs-' + chartColor + '-light')
-  const labelColor = getCSSVariableValue('--bs-gray-700')
+  const baseColor = 'var(--atisa-' + (chartColor === "primary" ? "primary" : chartColor === "success" ? "secondary" : chartColor === "danger" ? "danger" : "accent") + ')'
+  const lightColor = 'var(--atisa-bg-body)'
+  const labelColor = '#475569'
 
   return {
     series: [porcentaje],

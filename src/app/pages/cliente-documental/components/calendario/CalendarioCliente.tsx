@@ -11,6 +11,7 @@ import { descargarDocumentosCumplimiento } from '../../../../api/documentosCumpl
 import CumplimentarHitoModal from './CumplimentarHitoModal'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../../styles/atisaStyles'
 import { formatDateDisplay, formatDateTimeDisplay } from '../../../../utils/dateFormatter'
+import PageHeader from '../../../../components/ui/PageHeader'
 
 interface Props {
   clienteId: string
@@ -789,92 +790,54 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
 
   return (
     <div
+      className="container-fluid"
       style={{
         fontFamily: atisaStyles.fonts.secondary,
         backgroundColor: '#f8f9fa',
         minHeight: '100vh',
+        padding: '20px',
         display: 'flex',
         flexDirection: 'column'
       }}
     >
-      {/* Header del calendario */}
-      <header
-        style={{
-          background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-          color: 'white',
-          padding: '24px',
-          boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-          textAlign: 'center',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          width: '100%'
-        }}
-      >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-          {/* Columna izquierda: Botón Volver */}
-          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <button
-              className="btn"
-              onClick={() => navigate('/clientes-documental-calendario')}
-              style={getSecondaryButtonStyles()}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'white'
-                e.currentTarget.style.color = atisaStyles.colors.primary
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = 'white'
-              }}
-            >
-              <i className="bi bi-arrow-left" style={{ color: 'inherit' }}></i>
-              Volver a Gestor Documental / Clientes
-            </button>
-          </div>
-
-          {/* Columna centro: Título */}
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <h2
-              style={{
-                fontFamily: atisaStyles.fonts.primary,
-                fontWeight: 'bold',
-                color: 'white',
-                margin: 0,
-                fontSize: '2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px'
-              }}
-            >
-              <i className="bi bi-calendar3" style={{ color: 'white' }}></i>
-              Calendario de Procesos
-            </h2>
-            <p
-              style={{
-                fontFamily: atisaStyles.fonts.secondary,
-                color: atisaStyles.colors.light,
-                margin: '8px 0 0 0',
-                fontSize: '1.2rem',
-                fontWeight: '500'
-              }}
-            >
-              {cliente?.razsoc || clienteId}
-            </p>
-          </div>
-
-          {/* Columna derecha: Botones Ver Status y Ver Histórico */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center' }}>
+      <PageHeader
+        title="Calendario de Procesos"
+        subtitle={cliente?.razsoc || clienteId}
+        icon="calendar-3"
+        backButton={
+          <button
+            className="btn d-flex align-items-center"
+            onClick={() => navigate('/clientes-documental-calendario')}
+            style={getSecondaryButtonStyles()}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'white'
+              e.currentTarget.style.color = atisaStyles.colors.primary
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'white'
+            }}
+          >
+            <i className="bi bi-arrow-left me-2"></i>
+            Volver
+          </button>
+        }
+        actions={
+          <div className="d-flex align-items-center gap-3">
             {/* Badge de filtros activos */}
             {(filtrosActivos.size > 0 || fechaDesde || fechaHasta || busquedaNombre || claveFiltro || obligatorioFiltro) && (
-              <span style={{
-                backgroundColor: '#f1416c',
-                color: 'white',
-                borderRadius: '12px',
-                padding: '2px 10px',
-                fontSize: '12px',
-                fontWeight: '700'
-              }}>
+              <span
+                className="badge rounded-pill"
+                style={{
+                  backgroundColor: atisaStyles.colors.accent,
+                  color: 'white',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+              >
+                <i className="bi bi-funnel-fill me-1"></i>
                 {[
                   filtrosActivos.size,
                   fechaDesde ? 1 : 0,
@@ -895,7 +858,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
                 borderRadius: '8px',
                 fontFamily: atisaStyles.fonts.secondary,
                 fontWeight: '600',
-                padding: '12px 16px',
+                padding: '8px 16px',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
@@ -910,200 +873,176 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
               className="btn"
               onClick={() => navigate(`/status-cliente/${clienteId}`)}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
                 color: 'white',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
                 borderRadius: '8px',
                 fontFamily: atisaStyles.fonts.secondary,
                 fontWeight: '600',
-                padding: '12px 20px',
+                padding: '8px 16px',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
             >
-              <i className="bi bi-info-circle" style={{ color: 'white' }}></i>
-              Ver Status
+              <i className="bi bi-info-circle"></i>
+              Status
             </button>
             <button
               className="btn"
               onClick={() => navigate(`/historico-cumplimientos/${clienteId}`)}
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
                 color: 'white',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
                 borderRadius: '8px',
                 fontFamily: atisaStyles.fonts.secondary,
                 fontWeight: '600',
-                padding: '12px 20px',
+                padding: '8px 16px',
                 fontSize: '14px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
             >
-              <i className="bi bi-clock-history" style={{ color: 'white' }}></i>
-              Ver Histórico
+              <i className="bi bi-clock-history"></i>
+              Histórico
             </button>
           </div>
-        </div>
+        }
+      />
 
-        {/* Selector de Año y Periodos Integrado */}
-        <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-              <label
-                style={{
-                  fontFamily: atisaStyles.fonts.secondary,
-                  fontWeight: '600',
-                  color: 'white',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                <i className="bi bi-calendar-event me-2"></i>
-                Año:
-              </label>
-              <select
-                className="form-select w-auto"
-                value={selectedYear || ''}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                style={{
-                  fontFamily: atisaStyles.fonts.secondary,
-                  fontWeight: '600',
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '8px',
-                  padding: '6px 32px 6px 16px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                {availableYears.map(year => (
-                  <option key={year} value={year} style={{ color: 'black' }}>{year}</option>
-                ))}
-              </select>
-            </div>
+      {/* Selector de Año y Periodos - Ahora como un card sutil debajo del header */}
+      <div
+        className="card border-0 mb-4"
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0, 80, 92, 0.05)',
+          padding: '16px 24px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <label
+              style={{
+                fontFamily: atisaStyles.fonts.secondary,
+                fontWeight: '600',
+                color: atisaStyles.colors.primary,
+                fontSize: '14px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <i className="bi bi-calendar-event me-2"></i>
+              Año:
+            </label>
+            <select
+              className="form-select w-auto"
+              value={selectedYear || ''}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              style={{
+                fontFamily: atisaStyles.fonts.secondary,
+                fontWeight: '600',
+                backgroundColor: atisaStyles.colors.light,
+                color: atisaStyles.colors.primary,
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '4px 32px 4px 12px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              {availableYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
 
-            <div className="vr mx-2 bg-white" style={{ height: 24, opacity: 0.3, flexShrink: 0 }}></div>
+          <div className="vr mx-2" style={{ height: 24, opacity: 0.1, flexShrink: 0 }}></div>
 
-            {/* Lista de meses horizontal */}
-            <div className="d-flex overflow-auto align-items-center" style={{ scrollbarWidth: 'thin', gap: '8px', flexGrow: 1 }}>
-              {periodosDelAnio.map((periodo) => {
-                const [, month] = periodo.split('-')
-                const isSelected = selectedPeriod === periodo
-                return (
-                  <button
-                    key={periodo}
-                    onClick={() => setSelectedPeriod(periodo)}
-                    className="btn btn-sm"
-                    style={{
-                      backgroundColor: isSelected ? 'white' : 'rgba(255, 255, 255, 0.1)',
-                      color: isSelected ? atisaStyles.colors.primary : 'white',
-                      border: isSelected ? '1px solid white' : '1px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: '20px',
-                      padding: '6px 16px',
-                      fontWeight: 600,
-                      fontSize: '13px',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                      }
-                    }}
-                  >
-                    {getMesName(parseInt(month))}
-                  </button>
-                )
-              })}
-            </div>
+          {/* Lista de meses horizontal */}
+          <div className="d-flex overflow-auto align-items-center" style={{ scrollbarWidth: 'none', gap: '8px', flexGrow: 1 }}>
+            {periodosDelAnio.map((periodo) => {
+              const [, month] = periodo.split('-')
+              const isSelected = selectedPeriod === periodo
+              return (
+                <button
+                  key={periodo}
+                  onClick={() => setSelectedPeriod(periodo)}
+                  className="btn btn-sm"
+                  style={{
+                    backgroundColor: isSelected ? atisaStyles.colors.primary : atisaStyles.colors.light,
+                    color: isSelected ? 'white' : atisaStyles.colors.primary,
+                    border: isSelected ? `1px solid ${atisaStyles.colors.primary}` : '1px solid #e2e8f0',
+                    borderRadius: '20px',
+                    padding: '6px 16px',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {getMesName(parseInt(month))}
+                </button>
+              )
+            })}
+          </div>
 
-            <div className="vr mx-2 bg-white" style={{ height: 24, opacity: 0.3, flexShrink: 0 }}></div>
+          <div className="vr mx-2" style={{ height: 24, opacity: 0.1, flexShrink: 0 }}></div>
 
-            <div className="form-check" style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="header-abrir-todos"
-                checked={todosAbiertos}
-                onChange={(e) => {
-                  const abrir = e.target.checked
-                  setTodosAbiertos(abrir)
-                  if (abrir) {
-                    const procesosVisibles = Object.entries(groupedProcesos)
-                      .map(([, grupo], idx) => {
-                        const procesosFiltrados = selectedPeriod
-                          ? Object.entries(grupo.periodos).filter(([key]) => key === selectedPeriod)
-                          : []
-                        return procesosFiltrados.length > 0 ? idx.toString() : null
-                      })
-                      .filter((key): key is string => key !== null)
-                    setActiveKeys(procesosVisibles)
-                  } else {
-                    setActiveKeys([])
-                  }
-                }}
-                style={{
-                  cursor: 'pointer',
-                  width: '18px',
-                  height: '18px',
-                  margin: 0,
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.4)'
-                }}
-              />
-              <label
-                className="form-check-label"
-                htmlFor="header-abrir-todos"
-                style={{
-                  fontFamily: atisaStyles.fonts.secondary,
-                  fontSize: '13px',
-                  color: 'white',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  margin: 0,
-                  userSelect: 'none'
-                }}
-              >
-                Abrir todos
-              </label>
-            </div>
+          <div className="form-check" style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="header-abrir-todos"
+              checked={todosAbiertos}
+              onChange={(e) => {
+                const abrir = e.target.checked
+                setTodosAbiertos(abrir)
+                if (abrir) {
+                  const procesosVisibles = Object.entries(groupedProcesos)
+                    .map(([, grupo], idx) => {
+                      const procesosFiltrados = selectedPeriod
+                        ? Object.entries(grupo.periodos).filter(([key]) => key === selectedPeriod)
+                        : []
+                      return procesosFiltrados.length > 0 ? idx.toString() : null
+                    })
+                    .filter((key): key is string => key !== null)
+                  setActiveKeys(procesosVisibles)
+                } else {
+                  setActiveKeys([])
+                }
+              }}
+              style={{
+                cursor: 'pointer',
+                width: '18px',
+                height: '18px',
+                margin: 0,
+                backgroundColor: atisaStyles.colors.light,
+                border: '1px solid #e2e8f0'
+              }}
+            />
+            <label
+              className="form-check-label"
+              htmlFor="header-abrir-todos"
+              style={{
+                fontFamily: atisaStyles.fonts.secondary,
+                fontSize: '13px',
+                color: atisaStyles.colors.primary,
+                fontWeight: '500',
+                cursor: 'pointer',
+                margin: 0,
+                userSelect: 'none'
+              }}
+            >
+              Abrir todos
+            </label>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Overlay transparente */}
       {showFilters && (
@@ -1333,7 +1272,7 @@ const CalendarioCliente: FC<Props> = ({ clienteId }) => {
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '24px', maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+      <div style={{ flex: 1, padding: 0, width: '100%', maxWidth: 'none', margin: 0 }}>
         <Accordion
           activeKey={activeKeys}
           onSelect={(selectedKeys) => {

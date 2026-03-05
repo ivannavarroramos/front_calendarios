@@ -1,5 +1,4 @@
 import { FC, useState, useEffect, useMemo } from 'react'
-import { KTCard, KTCardBody } from '../../../_metronic/helpers'
 import { Cliente, getAllClientes, getClientesUsuario, getDropdownClientes } from '../../api/clientes'
 import { getClienteProcesosByCliente } from '../../api/clienteProcesos'
 import SharedPagination from '../../components/pagination/SharedPagination'
@@ -8,6 +7,7 @@ import { atisaStyles } from '../../styles/atisaStyles'
 
 import CustomToast from '../../components/ui/CustomToast'
 import { useAuth } from '../../modules/auth/core/Auth'
+import PageHeader from '../../components/ui/PageHeader'
 
 const ClientesDocumentalCalendarioList: FC = () => {
   const navigate = useNavigate()
@@ -298,57 +298,20 @@ const ClientesDocumentalCalendarioList: FC = () => {
         `}
       </style>
       <div
-        className="container-fluid py-5"
+        className="container-fluid"
         style={{
           fontFamily: atisaStyles.fonts.secondary,
           backgroundColor: '#f8f9fa',
-          minHeight: '100vh'
+          minHeight: '100vh',
+          padding: '20px'
         }}
       >
-        <div
-          className='mb-8'
-          style={{
-            background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-            color: 'white',
-            padding: '32px 24px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-            marginBottom: '24px'
-          }}
-        >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-            {/* Columna izquierda: Espacio vacío */}
-            <div></div>
-
-            {/* Columna centro: Título */}
-            <div style={{ textAlign: 'center' }}>
-              <h1
-                style={{
-                  fontFamily: atisaStyles.fonts.primary,
-                  fontWeight: 'bold',
-                  color: 'white',
-                  margin: 0,
-                  fontSize: '2rem'
-                }}
-              >
-                <i className="bi bi-building me-3" style={{ color: 'white' }}></i>
-                Gestor Documental/Calendario
-              </h1>
-              <h4
-                style={{
-                  fontFamily: atisaStyles.fonts.secondary,
-                  color: atisaStyles.colors.light,
-                  margin: '8px 0 0 0',
-                  fontSize: '1.2rem',
-                  fontWeight: '500'
-                }}
-              >
-                Directorio de empresas
-              </h4>
-            </div>
-
-            {/* Columna derecha: Botones */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+        <PageHeader
+          title="Gestor Documental/Calendario"
+          subtitle="Directorio de empresas"
+          icon="building"
+          actions={
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 type='button'
                 className='btn'
@@ -414,17 +377,16 @@ const ClientesDocumentalCalendarioList: FC = () => {
                 Ver Status Global
               </button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         <div
-          className='mb-6'
+          className='card border-0 mb-6'
           style={{
             backgroundColor: 'white',
             padding: '20px 24px',
             borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-            border: `1px solid ${atisaStyles.colors.light}`
+            boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)'
           }}
         >
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -440,7 +402,7 @@ const ClientesDocumentalCalendarioList: FC = () => {
                   fontSize: '14px',
                   padding: '12px 16px',
                   height: '48px',
-                  border: `2px solid ${atisaStyles.colors.light}`,
+                  border: `1.5px solid #cbd5e1`, // Color más visible (Slat-300 aprox)
                   borderRadius: '8px 0 0 8px',
                   transition: 'all 0.3s ease',
                   backgroundColor: 'white',
@@ -576,12 +538,6 @@ const ClientesDocumentalCalendarioList: FC = () => {
                     border: 'none',
                     color: 'white'
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
-                  }}
                 >
                   CIF {getSortIcon('cif')}
                 </th>
@@ -596,12 +552,6 @@ const ClientesDocumentalCalendarioList: FC = () => {
                     padding: '16px 12px',
                     border: 'none',
                     color: 'white'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
                   }}
                 >
                   Empresa {getSortIcon('razsoc')}

@@ -6,11 +6,11 @@ import { getAllProcesos } from '../../../api/procesos'
 import { getAllHitos } from '../../../api/hitos'
 import { getAllSubdepartamentos, Subdepartamento } from '../../../api/subdepartamentos'
 import Select from 'react-select'
-import { KTCard, KTCardBody } from '../../../../_metronic/helpers'
 import { atisaStyles, getSecondaryButtonStyles, getTableHeaderStyles, getTableCellStyles } from '../../../styles/atisaStyles'
 import { formatDateDisplay, formatDateTimeDisplay } from '../../../utils/dateFormatter'
 import SharedPagination from '../../../components/pagination/SharedPagination'
 import { useNavigate } from 'react-router-dom'
+import PageHeader from '../../../components/ui/PageHeader'
 
 export const HistorialAuditoriaGlobal: FC = () => {
     const navigate = useNavigate()
@@ -260,211 +260,138 @@ export const HistorialAuditoriaGlobal: FC = () => {
 
     return (
         <div
-            className="calendario-cliente-container"
+            className="container-fluid"
             style={{
                 fontFamily: atisaStyles.fonts.secondary,
                 display: 'flex',
                 flexDirection: 'column',
-                height: '100vh',
-                backgroundColor: '#f5f8fa',
-                overflow: 'hidden',
-                margin: 0,
-                width: '100%'
+                minHeight: '100vh',
+                backgroundColor: '#f8f9fa',
+                padding: '20px'
             }}
         >
-            <header
-                className="calendario-header"
-                style={{
-                    background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-                    color: 'white',
-                    boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 1000,
-                    width: '100%'
-                }}
-            >
-                <div
-                    className="header-title-section"
-                    style={{
-                        padding: '32px 24px'
-                    }}
-                >
-                    <div
-                        className="header-content"
+            <PageHeader
+                title="Historial de Auditoría"
+                subtitle="General (Todos los clientes)"
+                icon="clock-history"
+                backButton={
+                    <button
+                        className="btn d-flex align-items-center"
+                        onClick={() => navigate(`/clientes`)}
                         style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr auto 1fr',
-                            alignItems: 'center',
-                            gap: '1rem',
-                            maxWidth: '100%',
-                            margin: '0 auto'
+                            backgroundColor: 'transparent',
+                            border: `2px solid white`,
+                            color: 'white',
+                            fontFamily: atisaStyles.fonts.secondary,
+                            fontWeight: '600',
+                            borderRadius: '8px',
+                            padding: '8px 16px',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'white'
+                            e.currentTarget.style.color = atisaStyles.colors.primary
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.color = 'white'
                         }}
                     >
-                        {/* Columna izquierda: Botón Volver */}
-                        <div className='d-flex align-items-center gap-3' style={{ justifyContent: 'flex-start' }}>
+                        <i className="bi bi-arrow-left me-2"></i>
+                        Volver a Clientes
+                    </button>
+                }
+                actions={
+                    <>
+                        {activeFiltersCount > 0 && (
                             <button
-                                className="back-button"
-                                onClick={() => navigate(`/clientes`)}
-                                style={getSecondaryButtonStyles()}
+                                className="btn btn-sm me-2"
+                                onClick={clearFilters}
+                                style={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '8px',
+                                    fontFamily: atisaStyles.fonts.secondary,
+                                    fontWeight: '600',
+                                    padding: '8px 16px',
+                                    fontSize: '14px',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    height: '42px'
+                                }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'white'
-                                    e.currentTarget.style.color = atisaStyles.colors.primary
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+                                    e.currentTarget.style.transform = 'translateY(-1px)'
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'transparent'
-                                    e.currentTarget.style.color = 'white'
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
+                                    e.currentTarget.style.transform = 'translateY(0)'
                                 }}
                             >
-                                <i className="bi bi-arrow-left me-2" style={{ color: 'inherit' }}></i>
-                                Volver a Clientes
+                                <i className="bi bi-x-circle" style={{ color: 'white' }}></i>
+                                Limpiar Filtros
                             </button>
-                        </div>
-
-                        {/* Columna centro: Título y Cliente */}
-                        <div
-                            className="title-section"
-                            style={{
-                                textAlign: 'center',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <h1
+                        )}
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                className="btn btn-sm"
+                                onClick={() => setShowFilters(!showFilters)}
                                 style={{
-                                    fontFamily: atisaStyles.fonts.primary,
-                                    fontWeight: 'bold',
+                                    backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
                                     color: 'white',
-                                    margin: 0,
-                                    fontSize: '2rem',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '8px',
+                                    fontFamily: atisaStyles.fonts.secondary,
+                                    fontWeight: '600',
+                                    padding: '8px 16px',
+                                    fontSize: '14px',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    height: '42px'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
+                                    e.currentTarget.style.transform = 'translateY(-1px)'
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)'
+                                    e.currentTarget.style.transform = 'translateY(0)'
+                                }}
+                            >
+                                <i className="bi bi-funnel" style={{ color: 'white' }}></i>
+                                Filtros
+                            </button>
+                            {activeFiltersCount > 0 && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    right: '-8px',
+                                    backgroundColor: '#f1416c',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: '20px',
+                                    height: '20px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '12px',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                <i className="bi bi-clock-history" style={{ color: 'white' }}></i>
-                                Historial de Auditoría Global
-                            </h1>
-                            <p
-                                style={{
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    color: atisaStyles.colors.light,
-                                    margin: '8px 0 0 0',
-                                    fontSize: '1.2rem',
-                                    fontWeight: '500',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    maxWidth: '100%'
-                                }}
-                            >
-                                General (Todos los clientes)
-                            </p>
-                        </div>
-
-                        {/* Columna derecha: Acciones */}
-                        <div
-                            className="header-actions"
-                            style={{
-                                display: 'flex',
-                                gap: '12px',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                justifyContent: 'flex-end'
-                            }}
-                        >
-                            {activeFiltersCount > 0 && (
-                                <button
-                                    className="btn btn-sm me-2"
-                                    onClick={clearFilters}
-                                    style={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                                        color: 'white',
-                                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                                        borderRadius: '8px',
-                                        fontFamily: atisaStyles.fonts.secondary,
-                                        fontWeight: '600',
-                                        padding: '8px 16px',
-                                        fontSize: '14px',
-                                        transition: 'all 0.3s ease',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
-                                        e.currentTarget.style.transform = 'translateY(-1px)'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)'
-                                        e.currentTarget.style.transform = 'translateY(0)'
-                                    }}
-                                >
-                                    <i className="bi bi-x-circle" style={{ color: 'white' }}></i>
-                                    Limpiar Filtros
-                                </button>
+                                    fontSize: '11px',
+                                    fontWeight: 'bold',
+                                    border: '2px solid #007b8a',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                    zIndex: 1
+                                }}>
+                                    {activeFiltersCount}
+                                </span>
                             )}
-                            <div style={{ position: 'relative' }}>
-                                <button
-                                    className="btn btn-sm"
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    style={{
-                                        backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-                                        color: 'white',
-                                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                                        borderRadius: '8px',
-                                        fontFamily: atisaStyles.fonts.secondary,
-                                        fontWeight: '600',
-                                        padding: '8px 16px',
-                                        fontSize: '14px',
-                                        transition: 'all 0.3s ease',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)'
-                                        e.currentTarget.style.transform = 'translateY(-1px)'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)'
-                                        e.currentTarget.style.transform = 'translateY(0)'
-                                    }}
-                                >
-                                    <i className="bi bi-funnel" style={{ color: 'white' }}></i>
-                                    Filtros
-                                </button>
-                                {activeFiltersCount > 0 && (
-                                    <span style={{
-                                        position: 'absolute',
-                                        top: '-8px',
-                                        right: '-8px',
-                                        backgroundColor: '#f1416c',
-                                        color: 'white',
-                                        borderRadius: '50%',
-                                        width: '20px',
-                                        height: '20px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '11px',
-                                        fontWeight: 'bold',
-                                        border: '2px solid #007b8a',
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                        zIndex: 1
-                                    }}>
-                                        {activeFiltersCount}
-                                    </span>
-                                )}
-                            </div>
                         </div>
-                    </div>
-                </div>
-            </header>
+                    </>
+                }
+            />
 
             <div
                 className="main-layout"

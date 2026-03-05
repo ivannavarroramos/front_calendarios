@@ -1,5 +1,4 @@
 import React, { FC, useState, useEffect, useRef } from 'react'
-import { KTCard, KTCardBody, KTSVG } from '../../../_metronic/helpers'
 import {
   getResumenMetricas,
   getCumplimientoHitos,
@@ -17,8 +16,9 @@ import { HitosPorProcesoChart } from './components/HitosPorProcesoChart'
 import { HitosPorClienteChart } from './components/HitosPorClienteChart'
 import { TiempoResolucionChart } from './components/TiempoResolucionChart'
 import { VolumenMensualChart } from './components/VolumenMensualChart'
-import {atisaStyles} from '../../styles/atisaStyles'
+import { atisaStyles } from '../../styles/atisaStyles'
 import { ClienteData } from '../../api/metricas'
+import PageHeader from '../../components/ui/PageHeader'
 
 const MetricasList: FC = () => {
   const [loading, setLoading] = useState<boolean>(true)
@@ -137,7 +137,7 @@ const MetricasList: FC = () => {
   }
 
   const getIconPath = (icon: string) => {
-    const iconMap: {[key: string]: string} = {
+    const iconMap: { [key: string]: string } = {
       user: '/media/icons/duotune/general/gen021.svg',
       flow: '/media/icons/duotune/general/gen027.svg',
       flag: '/media/icons/duotune/general/gen003.svg',
@@ -167,79 +167,51 @@ const MetricasList: FC = () => {
       }}
     >
       <div className="d-flex flex-column">
-        {/* Header */}
-        <div
-          className="d-flex align-items-center justify-content-between mb-7"
-          style={{
-            backgroundColor: atisaStyles.colors.primary,
-            color: 'white',
-            padding: '24px 32px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)'
-          }}
-        >
-          <div className="flex-grow-1">
-            <h1
-              className="d-flex align-items-center fw-bolder fs-3 my-1"
-              style={{
-                fontFamily: atisaStyles.fonts.primary,
-                color: 'white',
-                margin: 0
-              }}
-            >
-              <i className="bi bi-graph-up me-3" style={{ fontSize: '32px' }}></i>
-              Dashboard de Métricas
-              <span
-                className="h-20px border-start ms-3 mx-2"
-                style={{ borderColor: atisaStyles.colors.light + '!important' }}
-              ></span>
-              <small
-                className="fs-7 fw-normal"
-                style={{ color: atisaStyles.colors.light }}
-              >
-                Análisis y seguimiento del sistema
-              </small>
-            </h1>
-          </div>
-          {clientesDisponibles.length > 0 && (
-            <div style={{ minWidth: '300px', marginLeft: '24px' }}>
-              <label
-                className="form-label mb-2"
-                style={{
-                  fontFamily: atisaStyles.fonts.secondary,
-                  color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '600'
-                }}
-              >
-                <i className="bi bi-funnel me-2"></i>
-                Filtrar por Cliente
-              </label>
-              <select
-                className="form-select"
-                value={clienteSeleccionado}
-                onChange={(e) => setClienteSeleccionado(e.target.value)}
-                style={{
-                  fontFamily: atisaStyles.fonts.secondary,
-                  borderRadius: '8px',
-                  border: `2px solid ${atisaStyles.colors.light}`,
-                  padding: '10px 16px',
-                  fontSize: '14px',
-                  backgroundColor: 'white',
-                  color: atisaStyles.colors.primary,
-                  fontWeight: '500'
-                }}
-              >
-                <option value="">Todos los clientes</option>
-                {clientesDisponibles.map((cliente) => (
-                  <option key={cliente.clienteId.trim()} value={cliente.clienteId.trim()}>
-                    {cliente.clienteNombre.trim()}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
+        <PageHeader
+          title="Dashboard de Métricas"
+          subtitle="Análisis y seguimiento del sistema"
+          icon="graph-up"
+          actions={
+            clientesDisponibles.length > 0 && (
+              <div style={{ minWidth: '300px' }}>
+                <label
+                  className="form-label mb-2"
+                  style={{
+                    fontFamily: atisaStyles.fonts.secondary,
+                    color: 'white',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <i className="bi bi-funnel me-2"></i>
+                  Filtrar por Cliente
+                </label>
+                <select
+                  className="form-select"
+                  value={clienteSeleccionado}
+                  onChange={(e) => setClienteSeleccionado(e.target.value)}
+                  style={{
+                    fontFamily: atisaStyles.fonts.secondary,
+                    borderRadius: '8px',
+                    border: `2px solid ${atisaStyles.colors.light}`,
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    backgroundColor: 'white',
+                    color: atisaStyles.colors.primary,
+                    fontWeight: '500'
+                  }}
+                >
+                  <option value="">Todos los clientes</option>
+                  {clientesDisponibles.map((cliente) => (
+                    <option key={cliente.clienteId.trim()} value={cliente.clienteId.trim()}>
+                      {cliente.clienteNombre.trim()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )
+          }
+        />
 
         {/* Métricas Cards */}
         {loading && (
@@ -304,113 +276,113 @@ const MetricasList: FC = () => {
         {!loading && !error && (
           <div className="row g-5 g-xl-8 mb-5 mb-xl-8">
             {getMetricas().map((metrica) => (
-            <div className="col-xl-3" key={metrica.id}>
-              <div
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-                  border: `1px solid ${atisaStyles.colors.light}`,
-                  height: '175px',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 80, 92, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 80, 92, 0.1)'
-                }}
-              >
-                <div className="d-flex flex-column p-6 h-100">
-                  {/* Header con icono y título */}
-                  <div className="d-flex align-items-center mb-4">
-                    <div
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '12px',
-                        backgroundColor: metrica.color === 'success' ? atisaStyles.colors.secondary :
-                                        metrica.color === 'warning' ? atisaStyles.colors.accent :
-                                        metrica.color === 'danger' ? '#dc3545' : atisaStyles.colors.primary,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginRight: '12px'
-                      }}
-                    >
-                      <i
-                        className={`bi bi-${metrica.icono === 'flag' ? 'flag' :
-                                   metrica.icono === 'time' ? 'clock' :
-                                   metrica.icono === 'warning' ? 'exclamation-triangle' :
-                                   metrica.icono === 'user' ? 'people' : 'flag'}`}
+              <div className="col-xl-3" key={metrica.id}>
+                <div
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
+                    border: `1px solid ${atisaStyles.colors.light}`,
+                    height: '175px',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 80, 92, 0.2)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 80, 92, 0.1)'
+                  }}
+                >
+                  <div className="d-flex flex-column p-6 h-100">
+                    {/* Header con icono y título */}
+                    <div className="d-flex align-items-center mb-4">
+                      <div
                         style={{
-                          fontSize: '24px',
-                          color: 'white'
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '12px',
+                          backgroundColor: metrica.color === 'success' ? atisaStyles.colors.secondary :
+                            metrica.color === 'warning' ? atisaStyles.colors.accent :
+                              metrica.color === 'danger' ? '#dc3545' : atisaStyles.colors.primary,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: '12px'
                         }}
-                      ></i>
+                      >
+                        <i
+                          className={`bi bi-${metrica.icono === 'flag' ? 'flag' :
+                            metrica.icono === 'time' ? 'clock' :
+                              metrica.icono === 'warning' ? 'exclamation-triangle' :
+                                metrica.icono === 'user' ? 'people' : 'flag'}`}
+                          style={{
+                            fontSize: '24px',
+                            color: 'white'
+                          }}
+                        ></i>
+                      </div>
+                      <div className="flex-grow-1">
+                        <h4
+                          className="fs-6 fw-bold mb-1"
+                          style={{
+                            fontFamily: atisaStyles.fonts.primary,
+                            color: atisaStyles.colors.primary,
+                            margin: 0
+                          }}
+                        >
+                          {metrica.titulo}
+                        </h4>
+                        <span
+                          className="fs-7"
+                          style={{
+                            fontFamily: atisaStyles.fonts.secondary,
+                            color: atisaStyles.colors.dark
+                          }}
+                        >
+                          {metrica.descripcion}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex-grow-1">
-                      <h4
-                        className="fs-6 fw-bold mb-1"
+
+                    {/* Valor y tendencia */}
+                    <div className="d-flex align-items-center justify-content-between mt-auto">
+                      <div
+                        className="fs-2x fw-bolder"
                         style={{
                           fontFamily: atisaStyles.fonts.primary,
                           color: atisaStyles.colors.primary,
-                          margin: 0
+                          fontSize: '2.5rem'
                         }}
                       >
-                        {metrica.titulo}
-                      </h4>
-                      <span
-                        className="fs-7"
-                        style={{
-                          fontFamily: atisaStyles.fonts.secondary,
-                          color: atisaStyles.colors.dark
-                        }}
-                      >
-                        {metrica.descripcion}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Valor y tendencia */}
-                  <div className="d-flex align-items-center justify-content-between mt-auto">
-                    <div
-                      className="fs-2x fw-bolder"
-                      style={{
-                        fontFamily: atisaStyles.fonts.primary,
-                        color: atisaStyles.colors.primary,
-                        fontSize: '2.5rem'
-                      }}
-                    >
-                      {metrica.valor}
-                    </div>
-                    <div className="d-flex align-items-center">
-                      <i
-                        className={`bi bi-arrow-${metrica.tendencia === 'up' ? 'up' : 'down'}`}
-                        style={{
-                          fontSize: '20px',
-                          color: metrica.tendencia === 'up' ? atisaStyles.colors.secondary : '#dc3545',
-                          marginRight: '4px'
-                        }}
-                      ></i>
-                      <span
-                        className="fw-bold fs-6"
-                        style={{
-                          fontFamily: atisaStyles.fonts.secondary,
-                          color: metrica.tendencia === 'up' ? atisaStyles.colors.secondary : '#dc3545'
-                        }}
-                      >
-                        {metrica.porcentaje}
-                      </span>
+                        {metrica.valor}
+                      </div>
+                      <div className="d-flex align-items-center">
+                        <i
+                          className={`bi bi-arrow-${metrica.tendencia === 'up' ? 'up' : 'down'}`}
+                          style={{
+                            fontSize: '20px',
+                            color: metrica.tendencia === 'up' ? atisaStyles.colors.secondary : '#dc3545',
+                            marginRight: '4px'
+                          }}
+                        ></i>
+                        <span
+                          className="fw-bold fs-6"
+                          style={{
+                            fontFamily: atisaStyles.fonts.secondary,
+                            color: metrica.tendencia === 'up' ? atisaStyles.colors.secondary : '#dc3545'
+                          }}
+                        >
+                          {metrica.porcentaje}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         )}
 

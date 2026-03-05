@@ -1,0 +1,376 @@
+/* =========================================
+   🏢 ATISA LAYOUT — Sidebar + Header + Content
+   ========================================= */
+
+/* Layout Principal */
+.atisa-app {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--atisa-bg-body);
+}
+
+/* Tablas Globales */
+.table thead th {
+    background-color: var(--atisa-primary) !important;
+    color: white !important;
+    font-family: var(--font-headings) !important;
+    font-weight: 700 !important;
+    border: none !important;
+    padding: 1rem 0.75rem !important;
+    vertical-align: middle !important;
+}
+
+.table-responsive {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    background-color: white;
+}
+
+/* Forzar bordes visibles en inputs si tienen clases específicas o son usados en filtros */
+.form-control,
+.form-select {
+    border: 1.5px solid #cbd5e1 !important;
+    /* Slate-300 */
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--atisa-secondary) !important;
+    box-shadow: 0 0 0 3px rgba(156, 186, 57, 0.2) !important;
+}
+
+/* =========================================
+   📂 SIDEBAR
+   ========================================= */
+.atisa-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background-color: var(--atisa-dark);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.atisa-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.atisa-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+/* Logo */
+.atisa-sidebar__logo {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.atisa-sidebar__logo-img {
+    max-width: 130px;
+    /* Reducción adicional sugerida */
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+
+/* Navegación */
+.atisa-sidebar__nav {
+    flex: 1;
+    padding: 0.75rem 0;
+}
+
+.atisa-sidebar__section-title {
+    padding: 1rem 1.5rem 0.4rem;
+    font-size: 0.6rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.atisa-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 1.5rem;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    font-size: 0.825rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+    position: relative;
+}
+
+.atisa-sidebar__link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left-color: rgba(156, 186, 57, 0.4);
+}
+
+.atisa-sidebar__link.active {
+    color: #fff;
+    background-color: rgba(156, 186, 57, 0.12);
+    border-left-color: var(--atisa-accent);
+    font-weight: 700;
+}
+
+.atisa-sidebar__link i {
+    width: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+/* User Info Footer */
+.atisa-sidebar__user {
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.atisa-sidebar__user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--atisa-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.atisa-sidebar__user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.atisa-sidebar__user-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.atisa-sidebar__user-email {
+    font-size: 0.65rem;
+    opacity: 0.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.atisa-sidebar__logout {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0.35rem;
+    border-radius: var(--radius-md);
+    transition: all 0.15s ease;
+    font-size: 0.85rem;
+}
+
+.atisa-sidebar__logout:hover {
+    color: var(--atisa-danger);
+    background: rgba(220, 38, 38, 0.1);
+}
+
+/* =========================================
+   🔝 HEADER
+   ========================================= */
+.atisa-header {
+    height: 52px;
+    background-color: var(--atisa-bg-card);
+    border-bottom: 1px solid var(--atisa-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.atisa-header__left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.atisa-header__toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--atisa-dark);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.35rem;
+    border-radius: var(--radius-md);
+}
+
+.atisa-header__toggle:hover {
+    background: var(--atisa-bg-body);
+}
+
+.atisa-header__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: #64748B;
+}
+
+.atisa-header__breadcrumb-page {
+    color: var(--atisa-dark);
+    font-weight: 700;
+}
+
+.atisa-header__right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* =========================================
+   📄 CONTENT
+   ========================================= */
+.atisa-main {
+    flex: 1;
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.atisa-content {
+    flex: 1;
+    padding: 1.25rem 1.5rem;
+}
+
+/* =========================================
+   🦶 FOOTER
+   ========================================= */
+.atisa-footer {
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #94A3B8;
+    border-top: 1px solid var(--atisa-border);
+    background-color: var(--atisa-bg-card);
+    flex-shrink: 0;
+}
+
+/* =========================================
+   📱 SPLASH SCREEN
+   ========================================= */
+.atisa-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: var(--atisa-bg-body);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.atisa-splash__logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--atisa-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.atisa-splash__text {
+    font-family: var(--font-headings);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--atisa-dark);
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 0.7;
+    }
+}
+
+/* =========================================
+   📱 SIDEBAR OVERLAY (Mobile)
+   ========================================= */
+.atisa-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+}
+
+/* =========================================
+   📱 RESPONSIVE
+   ========================================= */
+@media (max-width: 991.98px) {
+    .atisa-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .atisa-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .atisa-sidebar-overlay.open {
+        display: block;
+    }
+
+    .atisa-main {
+        margin-left: 0;
+    }
+
+    .atisa-header__toggle {
+        display: block;
+    }
+
+    .atisa-content {
+        padding: 1rem;
+    }
+}

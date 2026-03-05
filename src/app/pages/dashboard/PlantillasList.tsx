@@ -1,7 +1,6 @@
 import { FC, useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { KTCard, KTCardBody } from '../../../_metronic/helpers'
 import CustomToast from '../../components/ui/CustomToast'
 import PlantillaModal from './components/PlantillaModal'
 import PlantillaProcesosModal from './components/PlantillaProcesosModal'
@@ -10,6 +9,8 @@ import { PlantillaProcesos, getAllPlantillaProcesos, createPlantillaProcesos, de
 import { Proceso, getAllProcesos } from '../../api/procesos'
 import SharedPagination from '../../components/pagination/SharedPagination'
 import { atisaStyles, getPrimaryButtonStyles, getSecondaryButtonStyles, getTableHeaderStyles, getTableCellStyles, getBadgeStyles, getDropdownStyles, getActionsButtonStyles } from '../../styles/atisaStyles'
+import { Input, Button, ListCard, Pagination } from '../../../../atisa/AtisaComponents'
+import PageHeader from '../../components/ui/PageHeader'
 
 const PlantillasList: FC = () => {
   const navigate = useNavigate()
@@ -365,64 +366,42 @@ const PlantillasList: FC = () => {
   }, {} as Record<number, Array<PlantillaProcesos & { procesoData: Proceso }>>)
 
   return (
-    <div style={{
-      fontFamily: atisaStyles.fonts.secondary,
-      boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-      border: `1px solid ${atisaStyles.colors.light}`,
-      borderRadius: '12px',
-      overflow: 'hidden',
-      margin: 0,
-      width: '100%'
-    }}>
-      <KTCard>
-        <div
-          className='card-header border-0 pt-6'
-          style={{
-            background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-            color: 'white',
-            borderRadius: '8px 8px 0 0',
-            margin: 0,
-            padding: '24px 16px'
-          }}
-        >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-            {/* Izquierda: Botón Volver + Buscador */}
-            <div className='d-flex align-items-center gap-3' style={{ justifyContent: 'flex-start' }}>
-              <button
-                type='button'
-                className='btn'
-                onClick={() => navigate('/dashboard')}
-                style={getSecondaryButtonStyles()}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'white'
-                  e.currentTarget.style.color = atisaStyles.colors.primary
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = 'white'
-                }}
-              >
-                <i className="bi bi-arrow-left me-2"></i>
-                Volver a Dashboard
-              </button>
-              <div className='d-flex align-items-center position-relative' style={{ position: 'relative' }}>
+    <div
+      className="container-fluid"
+      style={{
+        fontFamily: atisaStyles.fonts.secondary,
+        backgroundColor: '#f8f9fa',
+        minHeight: '100vh',
+        padding: '20px'
+      }}
+    >
+      <div className="d-flex flex-column">
+        <PageHeader
+          title="Gestión de Plantillas"
+          subtitle="Configuración y estructura de plantillas base"
+          icon="file-earmark-text"
+          actions={
+            <div className="d-flex align-items-center gap-3">
+              <div className='position-relative'>
                 <i
-                  className='bi bi-search position-absolute ms-6'
+                  className='bi bi-search position-absolute translate-middle-y top-50 ms-4'
                   style={{ color: atisaStyles.colors.light, zIndex: 1 }}
                 ></i>
                 <input
                   type='text'
-                  className='form-control form-control-solid w-250px ps-14'
+                  className='form-control ps-12'
                   placeholder='Buscar plantilla...'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{
-                    backgroundColor: 'white',
-                    border: `2px solid ${atisaStyles.colors.light}`,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    border: 'none',
                     borderRadius: '8px',
                     fontFamily: atisaStyles.fonts.secondary,
                     fontSize: '14px',
-                    paddingRight: searching ? '50px' : '16px'
+                    width: '250px',
+                    height: '42px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
                   }}
                 />
                 {searching && (
@@ -449,24 +428,6 @@ const PlantillasList: FC = () => {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Centro: Título */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <h3 style={{
-                fontFamily: atisaStyles.fonts.primary,
-                fontWeight: 'bold',
-                color: 'white',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                fontSize: '2rem'
-              }}>
-                Gestión de Plantillas
-              </h3>
-            </div>
-
-            {/* Derecha: Botón Nuevo */}
-            <div className='d-flex gap-2' style={{ justifyContent: 'flex-end' }}>
               <button
                 type='button'
                 className='btn'
@@ -474,7 +435,18 @@ const PlantillasList: FC = () => {
                   setPlantillaEditando(null)
                   setShowModal(true)
                 }}
-                style={getPrimaryButtonStyles()}
+                style={{
+                  backgroundColor: atisaStyles.colors.secondary,
+                  border: `2px solid ${atisaStyles.colors.secondary}`,
+                  color: 'white',
+                  borderRadius: '8px',
+                  height: '42px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '0 20px',
+                  fontWeight: '600'
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
                   e.currentTarget.style.borderColor = atisaStyles.colors.accent
@@ -484,671 +456,188 @@ const PlantillasList: FC = () => {
                   e.currentTarget.style.borderColor = atisaStyles.colors.secondary
                 }}
               >
-                <i className="bi bi-plus-circle me-2"></i>
-                Añadir Plantilla
+                <i className="bi bi-plus-circle"></i>
+                Nueva Plantilla
               </button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
-        <KTCardBody className='p-0'>
-          {loading ? (
-            <div className='d-flex justify-content-center py-5'>
-              <div
-                className='spinner-border'
-                role='status'
-                style={{
-                  color: atisaStyles.colors.primary,
-                  width: '3rem',
-                  height: '3rem'
-                }}
-              >
-                <span className='visually-hidden'>Cargando...</span>
-              </div>
-            </div>
-          ) : error ? (
-            <div
-              className='alert alert-danger'
-              style={{
-                backgroundColor: '#f8d7da',
-                border: `1px solid #f5c6cb`,
-                color: '#721c24',
-                fontFamily: atisaStyles.fonts.secondary,
-                borderRadius: '8px',
-                margin: '16px'
-              }}
-            >
-              {error}
-            </div>
-          ) : (
-            <>
-              {filteredPlantillas.length === 0 ? (
-                <div
-                  className='text-center py-5'
-                  style={{
-                    backgroundColor: atisaStyles.colors.light,
-                    borderRadius: '0',
-                    border: `2px dashed ${atisaStyles.colors.primary}`,
-                    padding: '40px 20px',
-                    margin: 0,
-                    width: '100%'
-                  }}
-                >
-                  <i
-                    className='bi bi-file-earmark-text'
-                    style={{
-                      fontSize: '48px',
-                      color: atisaStyles.colors.primary,
-                      marginBottom: '16px'
-                    }}
-                  ></i>
-                  <h4
-                    style={{
-                      fontFamily: atisaStyles.fonts.primary,
-                      color: atisaStyles.colors.primary,
-                      marginBottom: '8px'
-                    }}
-                  >
-                    No hay plantillas disponibles
-                  </h4>
-                  <p
-                    style={{
-                      fontFamily: atisaStyles.fonts.secondary,
-                      color: atisaStyles.colors.dark,
-                      margin: 0
-                    }}
-                  >
-                    {debouncedSearchTerm ? 'No se encontraron plantillas que coincidan con tu búsqueda.' : 'Comienza creando tu primera plantilla.'}
-                  </p>
+        <div className='card border-0' style={{ boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+
+          <div className='p-0'>
+            {loading ? (
+              <div className='d-flex justify-content-center py-5'>
+                <div className='spinner-border text-primary' role='status' style={{ width: '3rem', height: '3rem' }}>
+                  <span className='visually-hidden'>Cargando...</span>
                 </div>
-              ) : (
-                <div className='table-responsive' style={{ margin: 0 }}>
-                  <table
-                    className='table align-middle table-row-dashed fs-6 gy-0'
-                    style={{
-                      fontFamily: atisaStyles.fonts.secondary,
-                      borderCollapse: 'separate',
-                      borderSpacing: '0',
-                      margin: 0,
-                      width: '100%'
-                    }}
-                  >
-                    <thead>
-                      <tr
-                        className='text-start fw-bold fs-7 text-uppercase gs-0'
-                        style={{
-                          backgroundColor: atisaStyles.colors.light,
-                          color: atisaStyles.colors.primary
-                        }}
-                      >
-                        <th
-                          className='cursor-pointer user-select-none'
-                          onClick={() => handleSort('id')}
-                          style={{
-                            ...getTableHeaderStyles(),
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                            e.currentTarget.style.color = 'white'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.light
-                            e.currentTarget.style.color = atisaStyles.colors.primary
-                          }}
-                        >
-                          ID {getSortIcon('id')}
-                        </th>
-                        <th
-                          className='cursor-pointer user-select-none'
-                          onClick={() => handleSort('nombre')}
-                          style={{
-                            ...getTableHeaderStyles(),
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                            e.currentTarget.style.color = 'white'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.light
-                            e.currentTarget.style.color = atisaStyles.colors.primary
-                          }}
-                        >
-                          Plantilla {getSortIcon('nombre')}
-                        </th>
-                        <th
-                          className='cursor-pointer user-select-none'
-                          onClick={() => handleSort('descripcion')}
-                          style={{
-                            ...getTableHeaderStyles(),
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                            e.currentTarget.style.color = 'white'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.light
-                            e.currentTarget.style.color = atisaStyles.colors.primary
-                          }}
-                        >
-                          Descripción {getSortIcon('descripcion')}
-                        </th>
-                        <th
-                          style={{
-                            ...getTableHeaderStyles(),
-                            fontFamily: atisaStyles.fonts.primary,
-                            fontWeight: 'bold',
-                            backgroundColor: atisaStyles.colors.light,
-                            color: atisaStyles.colors.primary
-                          }}
-                        >
-                          Procesos Asociados
-                        </th>
-                        <th
-                          className='text-start'
-                          style={{
-                            ...getTableHeaderStyles(),
-                            fontFamily: atisaStyles.fonts.primary,
-                            fontWeight: 'bold',
-                            backgroundColor: atisaStyles.colors.light,
-                            color: atisaStyles.colors.primary
-                          }}
-                        >
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedPlantillas.map((plantilla, index) => (
-                        <tr
-                          key={plantilla.id}
-                          style={{
-                            backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
-                            fontFamily: atisaStyles.fonts.secondary,
-                            transition: 'all 0.2s ease'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = atisaStyles.colors.light
-                            e.currentTarget.style.transform = 'translateY(-1px)'
-                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 80, 92, 0.1)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = index % 2 === 0 ? 'white' : '#f8f9fa'
-                            e.currentTarget.style.transform = 'translateY(0)'
-                            e.currentTarget.style.boxShadow = 'none'
-                          }}
-                        >
-                          <td style={{
-                            ...getTableCellStyles(),
-                            color: atisaStyles.colors.primary,
-                            fontWeight: '600'
-                          }}>
-                            {plantilla.id}
-                          </td>
-                          <td style={{
-                            ...getTableCellStyles(),
-                            color: atisaStyles.colors.dark,
-                            fontWeight: '600'
-                          }}>
-                            <div className='d-flex flex-column'>
-                              <span className='fw-bold'>{plantilla.nombre}</span>
-                            </div>
-                          </td>
-                          <td style={{
-                            ...getTableCellStyles(),
-                            color: atisaStyles.colors.dark,
-                            maxWidth: '200px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {plantilla.descripcion || '-'}
-                          </td>
-                          <td style={{
-                            ...getTableCellStyles()
-                          }}>
-                            <div className='d-flex flex-column gap-2' style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                              {groupedPlantillaProcesos[plantilla.id]?.map((pp) => (
-                                <div key={pp.id} className='d-flex align-items-center justify-content-between'>
-                                  <span
-                                    style={{
-                                      fontFamily: atisaStyles.fonts.secondary,
-                                      color: atisaStyles.colors.dark,
-                                      fontSize: '12px'
-                                    }}
-                                  >
+              </div>
+            ) : error ? (
+              <div className='alert alert-danger mx-3'>{error}</div>
+            ) : (
+              <>
+                {filteredPlantillas.length === 0 ? (
+                  <div className='text-center py-5 mx-3 border border-2 border-dashed rounded-3'>
+                    <i className='bi bi-file-earmark-text fs-1 text-muted opacity-50 mb-3 d-block'></i>
+                    <h4 className='text-muted'>No se encontraron plantillas</h4>
+                    <p className='text-muted small'>Intenta con otro término de búsqueda o crea una nueva.</p>
+                  </div>
+                ) : (
+                  <div className='table-responsive'>
+                    <table className='table table-hover align-middle mb-0'>
+                      <thead className='bg-light'>
+                        <tr className='text-uppercase fs-8 fw-black text-muted' style={{ letterSpacing: '0.05em' }}>
+                          <th className='ps-3' onClick={() => handleSort('id')} style={{ cursor: 'pointer' }}>ID {getSortIcon('id')}</th>
+                          <th onClick={() => handleSort('nombre')} style={{ cursor: 'pointer' }}>Nombre {getSortIcon('nombre')}</th>
+                          <th>Descripción</th>
+                          <th>Procesos</th>
+                          <th className='text-end pe-3'>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody style={{ fontSize: '0.825rem' }}>
+                        {paginatedPlantillas.map((plantilla) => (
+                          <tr key={plantilla.id}>
+                            <td className='ps-3 fw-bold text-primary'>{plantilla.id}</td>
+                            <td className='fw-bold'>{plantilla.nombre}</td>
+                            <td className='text-muted'>{plantilla.descripcion || '-'}</td>
+                            <td>
+                              <div className='d-flex flex-wrap gap-1'>
+                                {groupedPlantillaProcesos[plantilla.id]?.map((pp) => (
+                                  <span key={pp.id} className="badge bg-light text-dark border-0 fw-normal" style={{ fontSize: '0.65rem', padding: '0.35em 0.65em' }}>
                                     {pp.procesoData.nombre}
                                   </span>
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                          <td
-                            className='text-start'
-                            style={{
-                              ...getTableCellStyles()
-                            }}
-                          >
-                            <div className='d-flex justify-content-start gap-2'>
-                              <button
-                                className='btn btn-sm'
-                                onClick={() => {
-                                  setSelectedPlantillaForProcesos(plantilla)
-                                  setShowProcesosModal(true)
-                                }}
-                                style={{
-                                  backgroundColor: atisaStyles.colors.accent,
-                                  border: `2px solid ${atisaStyles.colors.accent}`,
-                                  color: 'white',
-                                  fontFamily: atisaStyles.fonts.secondary,
-                                  fontWeight: '600',
-                                  borderRadius: '6px',
-                                  padding: '4px 8px',
-                                  fontSize: '11px',
-                                  transition: 'all 0.3s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
-                                  e.currentTarget.style.borderColor = atisaStyles.colors.primary
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                                  e.currentTarget.style.borderColor = atisaStyles.colors.accent
-                                }}
-                              >
-                                <i className='bi bi-plus-circle me-2'></i>
-                                Añadir Procesos
-                              </button>
-                              <div className='dropdown-container' style={{ position: 'relative', display: 'inline-block' }}>
-                                <button
-                                  ref={(el) => (buttonRefs.current[plantilla.id] = el)}
-                                  className='btn btn-sm'
-                                  type='button'
-                                  onClick={(e) => handleActionsClick(plantilla.id, e)}
-                                  style={getActionsButtonStyles()}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                                    e.currentTarget.style.borderColor = atisaStyles.colors.accent
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
-                                    e.currentTarget.style.borderColor = atisaStyles.colors.primary
+                                ))}
+                              </div>
+                            </td>
+                            <td className='text-end pe-3'>
+                              <div className='d-flex justify-content-end gap-2'>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  outline
+                                  onClick={() => {
+                                    setSelectedPlantillaForProcesos(plantilla)
+                                    setShowProcesosModal(true)
                                   }}
                                 >
+                                  Procesos
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  onClick={(e) => handleActionsClick(plantilla.id, e as any)}
+                                  icon={<i className={`bi ${activeDropdown === plantilla.id ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>}
+                                >
                                   Acciones
-                                  <i className={`bi ${activeDropdown === plantilla.id ? 'bi-chevron-up' : 'bi-chevron-down'} ms-1`}></i>
-                                </button>
+                                </Button>
                               </div>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
 
-              {filteredPlantillas.length > 0 && (
-                <SharedPagination
-                  currentPage={page}
-                  totalItems={totalForPagination}
-                  pageSize={limit}
-                  onPageChange={setPage}
-                />
-              )}
-            </>
-          )}
-        </KTCardBody>
+                {totalForPagination > 0 && (
+                  <div className="p-3 border-top">
+                    <Pagination
+                      currentPage={page}
+                      totalPages={Math.ceil(totalForPagination / limit)}
+                      onPageChange={setPage}
+                      totalItems={totalForPagination}
+                      pageSize={limit}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-        {/* Dropdown con portal */}
-        {activeDropdown !== null && dropdownPosition && createPortal(
-          <div
-            className="dropdown-portal"
-            style={{
-              position: 'absolute',
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              transform: dropdownPosition.placement === 'top' ? 'translateY(-100%)' : 'none',
-              backgroundColor: 'white',
-              border: `2px solid ${atisaStyles.colors.light}`,
-              borderRadius: '8px',
-              boxShadow: '0 8px 25px rgba(0, 80, 92, 0.3)',
-              zIndex: 99999,
-              minWidth: '160px',
-              maxWidth: '200px'
-            }}
-          >
+          {/* Action Dropdown Portal */}
+          {activeDropdown !== null && dropdownPosition && createPortal(
             <div
+              className="dropdown-portal"
               style={{
-                padding: '8px 0',
-                fontFamily: atisaStyles.fonts.secondary
+                position: 'absolute',
+                top: dropdownPosition.top,
+                left: dropdownPosition.left,
+                transform: dropdownPosition.placement === 'top' ? 'translateY(-100%)' : 'none',
+                backgroundColor: 'white',
+                border: `1px solid var(--atisa-border)`,
+                borderRadius: '8px',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                zIndex: 10000,
+                minWidth: '150px',
+                padding: '6px'
               }}
             >
               <button
+                className="btn btn-sm w-100 text-start d-flex align-items-center gap-2 p-2 fw-bold text-dark"
+                style={{ fontSize: '0.75rem', borderRadius: '4px' }}
                 onClick={() => {
-                  const plantilla = filteredPlantillas.find(p => p.id === activeDropdown)
-                  if (plantilla) {
-                    setPlantillaEditando(plantilla)
-                    setShowModal(true)
-                  }
-                  setActiveDropdown(null)
-                  setDropdownPosition(null)
-                }}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '12px 16px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  color: atisaStyles.colors.primary,
-                  fontFamily: atisaStyles.fonts.secondary,
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: '0'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = atisaStyles.colors.light
-                  e.currentTarget.style.color = atisaStyles.colors.accent
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = atisaStyles.colors.primary
+                  const p = filteredPlantillas.find(x => x.id === activeDropdown);
+                  if (p) { setPlantillaEditando(p); setShowModal(true); }
+                  setActiveDropdown(null);
                 }}
               >
-                <i className="bi bi-pencil-square me-3" style={{ fontSize: '16px', color: 'inherit' }}></i>
-                Editar
+                <i className="bi bi-pencil-square"></i> Editar
               </button>
-
-              <div style={{
-                height: '1px',
-                backgroundColor: atisaStyles.colors.light,
-                margin: '4px 0'
-              }}></div>
-
+              <div className="my-1 border-top"></div>
               <button
-                onClick={() => {
-                  handleEliminar(activeDropdown)
-                }}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '12px 16px',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  color: '#dc3545',
-                  fontFamily: atisaStyles.fonts.secondary,
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: '0'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f8d7da'
-                  e.currentTarget.style.color = '#721c24'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = '#dc3545'
-                }}
+                className="btn btn-sm w-100 text-start d-flex align-items-center gap-2 p-2 fw-bold text-danger"
+                style={{ fontSize: '0.75rem', borderRadius: '4px' }}
+                onClick={() => handleEliminar(activeDropdown)}
               >
-                <i className="bi bi-trash3 me-3" style={{ fontSize: '16px', color: 'inherit' }}></i>
-                Eliminar
+                <i className="bi bi-trash3"></i> Eliminar
               </button>
-            </div>
-          </div>,
-          document.body
-        )}
+            </div>,
+            document.body
+          )}
 
-        <PlantillaModal
-          show={showModal}
-          onHide={() => setShowModal(false)}
-          onSave={handleSavePlantilla}
-          plantilla={plantillaEditando}
-        />
+          {/* Modals */}
+          <PlantillaModal
+            show={showModal}
+            onHide={() => setShowModal(false)}
+            onSave={handleSavePlantilla}
+            plantilla={plantillaEditando}
+          />
 
-        <PlantillaProcesosModal
-          show={showProcesosModal}
-          onHide={() => setShowProcesosModal(false)}
-          onSave={handleSaveProcesos}
-          plantillas={plantillas}
-          procesos={procesos}
-          selectedPlantillaId={selectedPlantillaForProcesos?.id || 0}
-          procesosActuales={plantillaProcesos}
-        />
+          {selectedPlantillaForProcesos && (
+            <PlantillaProcesosModal
+              show={showProcesosModal}
+              onHide={() => setShowProcesosModal(false)}
+              onSave={handleSaveProcesos}
+              plantillas={plantillas}
+              procesos={procesos}
+              selectedPlantillaId={selectedPlantillaForProcesos.id}
+              procesosActuales={plantillaProcesos}
+            />
+          )}
 
-        {/* Custom Toast */}
-        <CustomToast
-          show={showToast}
-          onClose={() => setShowToast(false)}
-          message={toastMessage}
-          type={toastType}
-        />
-
-        {/* Modal de confirmación para eliminar */}
-        {showEliminarModal && plantillaAEliminar && (
-          <div
-            className="modal fade show d-block"
-            tabIndex={-1}
-            style={{
-              background: 'rgba(0, 80, 92, 0.5)',
-              zIndex: 10000,
-              backdropFilter: 'blur(2px)'
-            }}
-          >
-            <div className="modal-dialog modal-dialog-centered">
-              <div
-                className="modal-content"
-                style={{
-                  borderRadius: '16px',
-                  border: `2px solid ${atisaStyles.colors.light}`,
-                  boxShadow: '0 12px 40px rgba(0, 80, 92, 0.4)',
-                  fontFamily: atisaStyles.fonts.secondary,
-                  overflow: 'hidden'
-                }}
-              >
-                <div
-                  className="modal-header"
-                  style={{
-                    backgroundColor: atisaStyles.colors.error,
-                    color: 'white',
-                    borderRadius: '14px 14px 0 0',
-                    border: 'none',
-                    padding: '20px 24px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <h5
-                    className="modal-title"
-                    style={{
-                      fontFamily: atisaStyles.fonts.primary,
-                      fontWeight: 'bold',
-                      margin: 0,
-                      fontSize: '1.3rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px'
-                    }}
-                  >
-                    <i className="bi bi-trash3-fill" style={{ color: 'white', fontSize: '1.5rem' }}></i>
-                    Confirmar Eliminación
-                  </h5>
-                  <button
-                    type="button"
-                    className="btn-close btn-close-white"
-                    onClick={cancelarEliminar}
-                    style={{
-                      filter: 'invert(1)',
-                      opacity: 0.8,
-                      transition: 'opacity 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '1'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '0.8'
-                    }}
-                  ></button>
-                </div>
-                <div
-                  className="modal-body"
-                  style={{
-                    padding: '28px 24px',
-                    backgroundColor: 'white'
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '16px',
-                      marginBottom: '20px'
-                    }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: '#fee2e2',
-                        borderRadius: '50%',
-                        width: '48px',
-                        height: '48px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}
-                    >
-                      <i className="bi bi-exclamation-octagon-fill" style={{ color: atisaStyles.colors.error, fontSize: '24px' }}></i>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h4
-                        style={{
-                          color: atisaStyles.colors.primary,
-                          marginBottom: '16px',
-                          fontFamily: atisaStyles.fonts.primary,
-                          fontWeight: 'bold',
-                          fontSize: '1.2rem'
-                        }}
-                      >
-                        ¿Está seguro de eliminar esta plantilla?
-                      </h4>
-                      <div
-                        style={{
-                          backgroundColor: '#f8f9fa',
-                          padding: '12px',
-                          borderRadius: '8px',
-                          marginBottom: '16px',
-                          border: `1px solid ${atisaStyles.colors.light}`
-                        }}
-                      >
-                        <p style={{ color: atisaStyles.colors.dark, marginBottom: '0', fontFamily: atisaStyles.fonts.secondary }}>
-                          <strong>Plantilla:</strong> {plantillaAEliminar.nombre}
-                        </p>
-                      </div>
-                      <div
-                        className="alert"
-                        style={{
-                          backgroundColor: '#fee2e2',
-                          border: '1px solid #fecaca',
-                          color: '#b91c1c',
-                          borderRadius: '8px',
-                          marginBottom: '0',
-                          fontFamily: atisaStyles.fonts.secondary
-                        }}
-                      >
-                        <i className="bi bi-info-circle me-2"></i>
-                        <strong>Esta acción eliminará la plantilla permanentemente y no se puede deshacer.</strong>
-                      </div>
-                    </div>
+          {showEliminarModal && plantillaAEliminar && (
+            <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1060 }}>
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '12px' }}>
+                  <div className="modal-header border-0 pb-0">
+                    <h5 className="modal-title fw-black" style={{ color: 'var(--atisa-primary)' }}>Confirmar Eliminación</h5>
+                    <button type="button" className="btn-close shadow-none" onClick={cancelarEliminar}></button>
                   </div>
-                </div>
-                <div
-                  className="modal-footer"
-                  style={{
-                    border: 'none',
-                    padding: '20px 24px',
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '0 0 14px 14px',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: '12px'
-                  }}
-                >
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={cancelarEliminar}
-                    style={{
-                      backgroundColor: '#6c757d',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontFamily: atisaStyles.fonts.secondary,
-                      fontWeight: '600',
-                      padding: '10px 20px',
-                      fontSize: '14px',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 2px 8px rgba(108, 117, 125, 0.2)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#5a6268'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#6c757d'
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(108, 117, 125, 0.2)'
-                    }}
-                  >
-                    <i className="bi bi-x-circle me-2"></i>
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={confirmarEliminar}
-                    style={{
-                      backgroundColor: atisaStyles.colors.error,
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontFamily: atisaStyles.fonts.secondary,
-                      fontWeight: '600',
-                      padding: '10px 20px',
-                      fontSize: '14px',
-                      transition: 'all 0.3s ease',
-                      boxShadow: `0 2px 8px ${atisaStyles.colors.error}4D`
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.filter = 'brightness(0.9)'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = `0 4px 12px ${atisaStyles.colors.error}66`
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.filter = 'none'
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = `0 2px 8px ${atisaStyles.colors.error}4D`
-                    }}
-                  >
-                    <i className="bi bi-trash3 me-2"></i>
-                    Confirmar Eliminación
-                  </button>
+                  <div className="modal-body py-4">
+                    <p className="mb-0">¿Estás seguro de que deseas eliminar la plantilla <strong>{plantillaAEliminar.nombre}</strong>?</p>
+                  </div>
+                  <div className="modal-footer border-0 pt-0">
+                    <Button onClick={cancelarEliminar} variant="secondary" outline>Cancelar</Button>
+                    <Button onClick={confirmarEliminar} variant="danger">Eliminar</Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </KTCard>
+          )}
+
+          <CustomToast show={showToast} onClose={() => setShowToast(false)} message={toastMessage} type={toastType} />
+        </div>
+      </div>
     </div>
   )
 }

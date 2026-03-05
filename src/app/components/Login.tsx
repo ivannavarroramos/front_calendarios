@@ -76,50 +76,28 @@ export const Login = () => {
               <div
                 className="text-center mb-8 pb-6"
                 style={{
-                  borderBottom: `3px solid ${atisaStyles.colors.primary}`,
                   paddingBottom: '24px'
                 }}
               >
-                <div
-                  className="mx-auto mb-6"
+                <img
+                  src="/Atisa_logo+tagline_color_positivo_RGB_300 (1).png"
+                  alt="ATISA Logo"
                   style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '20px',
-                    backgroundColor: atisaStyles.colors.primary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 8px 25px rgba(0, 80, 92, 0.3)',
-                    animation: 'bounceSubtle 2s ease-in-out infinite'
+                    width: '100%',
+                    maxWidth: '240px',
+                    height: 'auto',
+                    margin: '0 auto',
+                    display: 'block'
                   }}
-                >
-                  <i
-                    className="bi bi-shield-check"
-                    style={{
-                      fontSize: '40px',
-                      color: 'white'
-                    }}
-                  ></i>
-                </div>
-                <h2
-                  style={{
-                    fontFamily: atisaStyles.fonts.primary,
-                    color: atisaStyles.colors.primary,
-                    fontWeight: 'bold',
-                    margin: 0,
-                    fontSize: '2.5rem'
-                  }}
-                >
-                  ATISA
-                </h2>
+                />
                 <p
                   style={{
                     fontFamily: atisaStyles.fonts.secondary,
                     color: atisaStyles.colors.dark,
-                    margin: '8px 0 0 0',
-                    fontSize: '1.1rem',
-                    fontWeight: '500'
+                    margin: '16px 0 0 0',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    opacity: 0.8
                   }}
                 >
                   Gestión Calendario / Documental

@@ -1,94 +1,56 @@
 
 import { useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-import { toAbsoluteUrl } from '../../../_metronic/helpers'
 
 const AuthLayout = () => {
   useEffect(() => {
     const root = document.getElementById('root')
-    if (root) {
-      root.style.height = '100%'
-    }
+    if (root) root.style.height = '100%'
     return () => {
-      if (root) {
-        root.style.height = 'auto'
-      }
+      if (root) root.style.height = 'auto'
     }
   }, [])
 
   return (
-    <div className='d-flex flex-column flex-lg-row flex-column-fluid h-100'>
-      {/* begin::Body */}
-      <div className='d-flex flex-column flex-lg-row-fluid w-lg-50 p-10 order-2 order-lg-1'>
-        {/* begin::Form */}
-        <div className='d-flex flex-center flex-column flex-lg-row-fluid'>
-          {/* begin::Wrapper */}
-          <div className='w-lg-500px p-10'>
+    <div className='d-flex flex-column flex-lg-row h-100' style={{ minHeight: '100vh' }}>
+      {/* Formulario */}
+      <div className='d-flex flex-column flex-lg-row-fluid w-lg-50 p-5 order-2 order-lg-1' style={{ background: 'var(--atisa-bg-body)' }}>
+        <div className='d-flex flex-column justify-content-center align-items-center flex-grow-1' style={{ transform: 'translateY(60px)' }}>
+          <div style={{ width: '100%', maxWidth: '480px', padding: '2rem' }}>
             <Outlet />
           </div>
-          {/* end::Wrapper */}
         </div>
-        {/* end::Form */}
-
-        {/* begin::Footer */}
-        <div className='d-flex flex-center flex-wrap px-5'>
-          {/* begin::Links */}
-          <div className='d-flex fw-semibold text-primary fs-base'>
-            <a href='#' className='px-5' target='_blank'>
-              Terms
-            </a>
-
-            <a href='#' className='px-5' target='_blank'>
-              Plans
-            </a>
-
-            <a href='#' className='px-5' target='_blank'>
-              Contact Us
-            </a>
-          </div>
-          {/* end::Links */}
+        <div className='text-center py-3' style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
+          © {new Date().getFullYear()} ATISA — Gestión Integral
         </div>
-        {/* end::Footer */}
       </div>
-      {/* end::Body */}
 
-      {/* begin::Aside */}
+      {/* Panel lateral decorativo */}
       <div
-        className='d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2'
-        style={{ backgroundImage: `url(${toAbsoluteUrl('media/misc/auth-bg.png')})` }}
+        className='d-flex flex-column justify-content-center align-items-center w-lg-50 order-1 order-lg-2 p-5'
+        style={{
+          background: 'linear-gradient(135deg, var(--atisa-dark) 0%, #003d45 100%)',
+          color: '#fff',
+          minHeight: '200px',
+        }}
       >
-        {/* begin::Content */}
-        <div className='d-flex flex-column flex-center py-15 px-5 px-md-15 w-100'>
-          {/* begin::Logo */}
-          <Link to='/' className='mb-12'>
-            <img alt='Logo' src={toAbsoluteUrl('media/logos/custom-1.png')} className='h-75px' />
-          </Link>
-          {/* end::Logo */}
-
-          {/* begin::Image */}
-          <img
-            className='mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20'
-            src={toAbsoluteUrl('media/misc/auth-screens.png')}
-            alt=''
-          />
-          {/* end::Image */}
-
-          {/* begin::Title */}
-          <h1 className='text-white fs-2qx fw-bolder text-center mb-7'>
+        <div className='text-center' style={{ maxWidth: '400px' }}>
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '50%', background: 'var(--atisa-accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem',
+            fontSize: '1.5rem', boxShadow: '0 4px 12px rgba(156,186,57,0.3)'
+          }}>
+            <i className="fa-solid fa-shield-halved"></i>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-headings)', fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>
             Gestión Inteligente de Calendarios
           </h1>
-          {/* end::Title */}
-
-          {/* begin::Text */}
-          <div className='text-white fs-base text-center'>
-            Accede a todos los procesos y documentos de tus clientes de forma centralizada y segura.<br />
-            Mantén el control de tus hitos y plazos con la confianza de Atisa.
-          </div>
-          {/* end::Text */}
+          <p style={{ opacity: 0.8, fontSize: '0.9rem', lineHeight: 1.6 }}>
+            Accede a todos los procesos y documentos de tus clientes de forma centralizada y segura.
+            Mantén el control de tus hitos y plazos con la confianza de ATISA.
+          </p>
         </div>
-        {/* end::Content */}
       </div>
-      {/* end::Aside */}
     </div>
   )
 }

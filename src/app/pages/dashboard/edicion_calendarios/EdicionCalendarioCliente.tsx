@@ -10,6 +10,8 @@ import { Hito, getAllHitos } from '../../../api/hitos'
 import { createAuditoriaCalendario, AuditoriaCalendarioCreate, MOTIVOS_AUDITORIA, MotivoAuditoria } from '../../../api/auditoriaCalendarios'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../styles/atisaStyles'
 import { formatDateDisplay } from '../../../utils/dateFormatter'
+import PageHeader from '../../../components/ui/PageHeader'
+import { useAuth } from '../../../modules/auth/core/Auth'
 
 interface Props {
   clienteId: string
@@ -29,7 +31,7 @@ interface EditForm {
   motivo: MotivoAuditoria
 }
 
-import { useAuth } from '../../../modules/auth/core/Auth'
+
 
 const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
   const { currentUser, auth } = useAuth()
@@ -1234,163 +1236,74 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
         }
       `}</style>
       <div
-        className="editar-calendario-container"
+        className="container-fluid"
         style={{
           fontFamily: atisaStyles.fonts.secondary,
           backgroundColor: '#f8f9fa',
           minHeight: '100vh',
+          padding: '20px',
           display: 'flex',
           flexDirection: 'column'
         }}
       >
-        {/* Header fijo con título y filtros */}
-        <header
-          className="calendario-header"
-          style={{
-            background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-            color: 'white',
-            boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1000,
-            width: '100%'
-          }}
-        >
-          {/* Sección de título */}
-          <div
-            className="header-title-section"
-            style={{
-              padding: '32px 24px'
-            }}
-          >
-            <div
-              className="header-content"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr',
-                alignItems: 'center',
-                gap: '1rem',
-                maxWidth: '100%',
-                margin: '0 auto'
+        <PageHeader
+          title="Editar Calendario"
+          subtitle={cliente?.razsoc || clienteId}
+          icon="pencil-square"
+          backButton={
+            <button
+              className="btn d-flex align-items-center"
+              onClick={() => navigate('/clientes')}
+              style={getSecondaryButtonStyles()}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'white'
+                e.currentTarget.style.color = atisaStyles.colors.primary
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = 'white'
               }}
             >
-              {/* Columna izquierda: Botón Volver */}
-              <div className='d-flex align-items-center gap-3' style={{ justifyContent: 'flex-start' }}>
-                <button
-                  className="back-button"
-                  onClick={() => navigate('/clientes')}
-                  style={getSecondaryButtonStyles()}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'white'
-                    e.currentTarget.style.color = atisaStyles.colors.primary
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                >
-                  <i className="bi bi-arrow-left me-2" style={{ color: 'inherit' }}></i>
-                  Volver a Clientes
-                </button>
-              </div>
+              <i className="bi bi-arrow-left me-2"></i>
+              Volver
+            </button>
+          }
+          actions={
+            <button
+              className="btn"
+              onClick={() => setVistaCalendario(!vistaCalendario)}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '8px',
+                fontFamily: atisaStyles.fonts.secondary,
+                fontWeight: '600',
+                padding: '8px 16px',
+                fontSize: '14px',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <i className={`bi ${vistaCalendario ? 'bi-table' : 'bi-calendar3'}`}></i>
+              {vistaCalendario ? 'Vista Tabla' : 'Vista Calendario'}
+            </button>
+          }
+        />
 
-              {/* Columna centro: Título */}
-              <div
-                className="title-section"
-                style={{
-                  textAlign: 'center',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <h1
-                  style={{
-                    fontFamily: atisaStyles.fonts.primary,
-                    fontWeight: 'bold',
-                    color: 'white',
-                    margin: 0,
-                    fontSize: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '12px',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  <i className="bi bi-pencil-square" style={{ color: 'white' }}></i>
-                  Editar Calendario
-                </h1>
-                <p
-                  style={{
-                    fontFamily: atisaStyles.fonts.secondary,
-                    color: atisaStyles.colors.light,
-                    margin: '8px 0 0 0',
-                    fontSize: '1.2rem',
-                    fontWeight: '500',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '100%'
-                  }}
-                >
-                  {cliente?.razsoc || clienteId}
-                </p>
-              </div>
-
-              {/* Columna derecha: Botón de vista */}
-              <div
-                className="header-actions"
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  justifyContent: 'flex-end'
-                }}
-              >
-                <button
-                  className="btn"
-                  onClick={() => setVistaCalendario(!vistaCalendario)}
-                  style={{
-                    backgroundColor: atisaStyles.colors.primary,
-                    color: 'white',
-                    border: `2px solid ${atisaStyles.colors.primary}`,
-                    borderRadius: '8px',
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                    e.currentTarget.style.borderColor = atisaStyles.colors.secondary
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
-                    e.currentTarget.style.borderColor = atisaStyles.colors.primary
-                  }}
-                >
-                  <i className={`bi ${vistaCalendario ? 'bi-table' : 'bi-calendar3'}`} style={{ color: 'white' }}></i>
-                  {vistaCalendario ? 'Vista Tabla' : 'Vista Calendario'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Sección de filtros */}
+        {/* Sección de filtros */}
+        <div
+          className="card border-0 mb-4"
+          style={{
+            backgroundColor: 'rgba(0, 80, 92, 0.05)',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
           <div
-            className="header-filters-section"
-            style={{
-              padding: '1.5rem 2rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)'
-            }}
+            className="card-body p-4"
           >
             <div
               style={{
@@ -1777,33 +1690,11 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
               )}
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Layout principal */}
-        <div
-          className="main-layout"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            flex: 1,
-            padding: '1rem',
-            width: '100%'
-          }}
-        >
-          {/* Área de contenido principal */}
-          <main
-            className="content-area"
-            style={{
-              width: '100%',
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '1.5rem 2rem',
-              boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-              minHeight: '600px',
-              display: 'flex',
-              flexDirection: 'column'
-            }}
-          >
+        <div className="card border-0 shadow-sm" style={{ borderRadius: '12px' }}>
+          <div className="card-body p-4">
 
             {/* Vista de calendario o tabla */}
             {vistaCalendario ? (
@@ -2557,1096 +2448,161 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
                 </div>
               </div>
             )}
-          </main>
+          </div>
         </div>
-
-
-        {/* Modal de edición de hito mejorado */}
-        <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" centered>
-          <Modal.Header
-            style={{
-              backgroundColor: atisaStyles.colors.primary,
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px 12px 0 0',
-              padding: '20px 24px'
-            }}
-          >
-            <Modal.Title
-              style={{
-                fontFamily: atisaStyles.fonts.primary,
-                fontWeight: 'bold',
-                color: 'white',
-                fontSize: '1.25rem',
-                margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}
-            >
-              <i className="bi bi-pencil-square" style={{ color: 'white' }}></i>
-              Editar Hito
-            </Modal.Title>
-            <button
-              type="button"
-              className="btn-close btn-close-white"
-              onClick={() => setShowEditModal(false)}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                border: 'none',
-                borderRadius: '6px',
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-              }}
-            >
-              <i className="bi bi-x" style={{ color: 'white', fontSize: '16px' }}></i>
-            </button>
-          </Modal.Header>
-
-          <Modal.Body style={{ padding: '24px' }}>
-            {/* Información del hito */}
-            <div
-              className="mb-4 p-3"
-              style={{
-                backgroundColor: atisaStyles.colors.light,
-                borderRadius: '8px',
-                border: `1px solid ${atisaStyles.colors.accent}`
-              }}
-            >
-              <div className="row">
-                <div className="col-md-6">
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: atisaStyles.colors.dark, marginBottom: '4px' }}>
-                    HITO
-                  </label>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: atisaStyles.colors.primary }}>
-                    {selectedHito ? getNombreHito(selectedHito.hito_id) : ''}
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <label style={{ fontSize: '12px', fontWeight: '600', color: atisaStyles.colors.dark, marginBottom: '4px' }}>
-                    PROCESO
-                  </label>
-                  <div style={{ fontSize: '14px', color: atisaStyles.colors.dark }}>
-                    {selectedHito ? getNombreProceso(selectedHito.cliente_proceso_id) : ''}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Formulario de edición */}
-            <div className="hito-edit-form">
-              {/* Advertencia sobre cambio de mes */}
-              {selectedHito && selectedPeriod && editForm.fecha_limite && (() => {
-                const fechaSeleccionada = new Date(editForm.fecha_limite)
-                const [year, month] = selectedPeriod.split('-').map(Number)
-                const mesSeleccionado = new Date(year, month - 1, 1)
-                const esMesDiferente = fechaSeleccionada.getFullYear() !== year || fechaSeleccionada.getMonth() !== (month - 1)
-
-                return esMesDiferente ? (
-                  <div
-                    className="alert alert-warning mb-4"
-                    style={{
-                      backgroundColor: '#fff3cd',
-                      border: '1px solid #ffeaa7',
-                      borderRadius: '8px',
-                      padding: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <i className="bi bi-exclamation-triangle" style={{ color: '#856404', fontSize: '16px' }}></i>
-                    <div>
-                      <strong style={{ color: '#856404', fontSize: '14px' }}>Cambio de mes detectado</strong>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#856404' }}>
-                        La fecha seleccionada está en un mes diferente al período actual.
-                        El hito se moverá al mes correspondiente.
-                      </p>
-                    </div>
-                  </div>
-                ) : null
-              })()}
-
-              <div className="row">
-                <div className="col-md-6">
-                  <div className="form-group mb-4">
-                    <label className="form-label" style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: atisaStyles.colors.dark,
-                      marginBottom: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}>
-                      <i className="bi bi-calendar3" style={{ color: atisaStyles.colors.primary }}></i>
-                      Fecha Límite *
-                    </label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={editForm.fecha_limite || ''}
-                      onChange={(e) => {
-                        const newVal = e.target.value || ''
-                        if (!newVal) {
-                          showToastMessage('La fecha límite es obligatoria y no se puede dejar vacía', 'warning')
-                          e.target.value = editForm.fecha_limite || ''
-                          return
-                        }
-                        setEditForm({ ...editForm, fecha_limite: newVal })
-                      }}
-                      style={{
-                        fontFamily: atisaStyles.fonts.secondary,
-                        fontSize: '14px',
-                        border: `2px solid ${atisaStyles.colors.light}`,
-                        borderRadius: '8px',
-                        padding: '12px',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = atisaStyles.colors.accent
-                        e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = atisaStyles.colors.light
-                        e.target.style.boxShadow = 'none'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-md-6">
-                  <div className="form-group mb-4">
-                    <label className="form-label" style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: atisaStyles.colors.dark,
-                      marginBottom: '8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}>
-                      <i className="bi bi-clock" style={{ color: atisaStyles.colors.primary }}></i>
-                      Hora Límite
-                    </label>
-                    <input
-                      type="time"
-                      className="form-control"
-                      value={editForm.hora_limite || ''}
-                      onChange={(e) => setEditForm({ ...editForm, hora_limite: e.target.value || null })}
-                      style={{
-                        fontFamily: atisaStyles.fonts.secondary,
-                        fontSize: '14px',
-                        border: `2px solid ${atisaStyles.colors.light}`,
-                        borderRadius: '8px',
-                        padding: '12px',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = atisaStyles.colors.accent
-                        e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = atisaStyles.colors.light
-                        e.target.style.boxShadow = 'none'
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Motivo de Auditoría */}
-              <div className="form-group mb-4">
-                <label className="form-label" style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: atisaStyles.colors.dark,
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <i className="bi bi-flag" style={{ color: atisaStyles.colors.primary }}></i>
-                  Motivo de modificación *
-                </label>
-                <select
-                  className="form-select"
-                  value={editForm.motivo}
-                  onChange={(e) => setEditForm({ ...editForm, motivo: parseInt(e.target.value) as MotivoAuditoria })}
-                  style={{
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontSize: '14px',
-                    border: `2px solid ${atisaStyles.colors.light}`,
-                    borderRadius: '8px',
-                    padding: '12px',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = atisaStyles.colors.accent
-                    e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = atisaStyles.colors.light
-                    e.target.style.boxShadow = 'none'
-                  }}
-                >
-                  <option value={0} disabled>Seleccione un motivo...</option>
-                  {MOTIVOS_AUDITORIA.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.id}. {m.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Observaciones */}
-              <div className="form-group mb-4">
-                <label className="form-label" style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: atisaStyles.colors.dark,
-                  marginBottom: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <i className="bi bi-chat-text" style={{ color: atisaStyles.colors.primary }}></i>
-                  Observaciones
-                </label>
-                <textarea
-                  className="form-control"
-                  value={editForm.observaciones}
-                  onChange={(e) => setEditForm({ ...editForm, observaciones: e.target.value })}
-                  rows={4}
-                  placeholder="Agregue observaciones sobre los cambios realizados en este hito..."
-                  style={{
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontSize: '14px',
-                    border: `2px solid ${atisaStyles.colors.light}`,
-                    borderRadius: '8px',
-                    padding: '12px',
-                    resize: 'vertical',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = atisaStyles.colors.accent
-                    e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = atisaStyles.colors.light
-                    e.target.style.boxShadow = 'none'
-                  }}
-                />
-              </div>
-            </div>
-          </Modal.Body>
-
-          <Modal.Footer
-            style={{
-              backgroundColor: '#f8f9fa',
-              border: 'none',
-              padding: '20px 24px',
-              borderRadius: '0 0 12px 12px'
-            }}
-          >
-            <button
-              className="btn"
-              onClick={() => setShowEditModal(false)}
-              style={{
-                fontFamily: atisaStyles.fonts.secondary,
-                fontSize: '14px',
-                padding: '10px 20px',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#5a6268'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#6c757d'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <i className="bi bi-x-circle me-2"></i>
-              Cancelar
-            </button>
-            <button
-              className="btn"
-              onClick={guardarHito}
-              style={{
-                fontFamily: atisaStyles.fonts.secondary,
-                fontSize: '14px',
-                padding: '10px 20px',
-                backgroundColor: atisaStyles.colors.secondary,
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                e.currentTarget.style.transform = 'translateY(-1px)'
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(156, 186, 57, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              <i className="bi bi-check-circle me-2"></i>
-              Guardar Cambios
-            </button>
-          </Modal.Footer>
-        </Modal>
-
-
-        {/* Notificaciones Toast */}
-        <CustomToast
-          show={showSuccess}
-          onClose={() => setShowSuccess(false)}
-          message="Los cambios se han guardado correctamente"
-          type="success"
-          delay={3000}
-        />
-        <CustomToast
-          show={showError}
-          onClose={() => setShowError(false)}
-          message={errorMessage || 'Ha ocurrido un error al guardar los cambios'}
-          type="error"
-          delay={5000}
-        />
       </div>
 
-      {/* Modal deshabilitar desde fecha */}
-      {showDeshabilitarDesdeModal && (
-        <div className="modal fade show d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content" style={{ borderRadius: 12 }}>
-              <div className="modal-header" style={{ backgroundColor: atisaStyles.colors.primary, color: 'white', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
-                <h5 className="modal-title" style={{
-                  margin: 0,
-                  fontFamily: atisaStyles.fonts.primary,
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: 'white'
-                }}>Deshabilitar desde fecha</h5>
-                <button type="button" className="btn-close btn-close-white" onClick={() => setShowDeshabilitarDesdeModal(false)}></button>
-              </div>
-              <div className="modal-body" style={{ fontFamily: atisaStyles.fonts.secondary }}>
-                <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Fecha desde</label>
-                  <input type="date" className="form-control" value={fechaDesdeDeshabilitar} onChange={(e) => setFechaDesdeDeshabilitar(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>Tipo de deshabilitación</label>
-                  <div className="btn-group w-100" role="group">
-                    <button
-                      type="button"
-                      className={`btn ${modoDeshabilitar === 'hitos' ? 'btn-primary' : 'btn-outline-primary'}`}
-                      onClick={() => {
-                        setModoDeshabilitar('hitos')
-                        // No resetear selecciones, solo limpiar búsquedas
-                        setBusquedaHitosModal('')
-                        setBusquedaProcesosModal('')
-                        // Sincronizar procesos basado en hitos seleccionados
-                        setTimeout(() => {
-                          sincronizarProcesosDesdeHitos()
-                        }, 0)
-                      }}
-                      style={{
-                        fontFamily: atisaStyles.fonts.secondary,
-                        fontWeight: '600',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (modoDeshabilitar !== 'hitos') {
-                          e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
-                          e.currentTarget.style.color = 'white'
-                          e.currentTarget.style.borderColor = atisaStyles.colors.primary
-                          e.currentTarget.style.transform = 'translateY(-2px)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (modoDeshabilitar !== 'hitos') {
-                          e.currentTarget.style.backgroundColor = 'transparent'
-                          e.currentTarget.style.color = atisaStyles.colors.primary
-                          e.currentTarget.style.borderColor = atisaStyles.colors.primary
-                          e.currentTarget.style.transform = 'translateY(0)'
-                        }
-                      }}
-                    >
-                      Por Hitos
-                    </button>
-                    <button
-                      type="button"
-                      className={`btn ${modoDeshabilitar === 'procesos' ? 'btn-primary' : 'btn-outline-primary'}`}
-                      onClick={() => {
-                        setModoDeshabilitar('procesos')
-                        // No resetear selecciones, solo limpiar búsquedas
-                        setBusquedaHitosModal('')
-                        setBusquedaProcesosModal('')
-                        // Sincronizar hitos basado en procesos seleccionados
-                        setTimeout(() => {
-                          const procesosSeleccionados = Array.from(selectedProcesos)
-                          const hitosASeleccionar = new Set<number>()
-                          procesosSeleccionados.forEach(procesoId => {
-                            const hitosDelProceso = getHitosFiltrados().filter(h => h.cliente_proceso_id === procesoId)
-                            hitosDelProceso.forEach(h => hitosASeleccionar.add(h.hito_id))
-                          })
-                          setSelectedHitosMaestro(hitosASeleccionar)
-                        }, 0)
-                      }}
-                      style={{
-                        fontFamily: atisaStyles.fonts.secondary,
-                        fontWeight: '600',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (modoDeshabilitar !== 'procesos') {
-                          e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
-                          e.currentTarget.style.color = 'white'
-                          e.currentTarget.style.borderColor = atisaStyles.colors.primary
-                          e.currentTarget.style.transform = 'translateY(-2px)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (modoDeshabilitar !== 'procesos') {
-                          e.currentTarget.style.backgroundColor = 'transparent'
-                          e.currentTarget.style.color = atisaStyles.colors.primary
-                          e.currentTarget.style.borderColor = atisaStyles.colors.primary
-                          e.currentTarget.style.transform = 'translateY(0)'
-                        }
-                      }}
-                    >
-                      Por Procesos
-                    </button>
-                  </div>
-                </div>
-                <div className="mb-2 d-flex justify-content-between align-items-center" style={{ gap: '8px' }}>
-                  <label className="form-label m-0" style={{ fontWeight: 600 }}>
-                    {modoDeshabilitar === 'hitos' ? 'Seleccione los hitos a deshabilitar' : 'Seleccione los procesos a deshabilitar'}
-                  </label>
-                  <small style={{ color: atisaStyles.colors.dark }}>
-                    {modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size : selectedProcesos.size} seleccionados
-                  </small>
-                </div>
-                <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
-                  <input
-                    type="text"
-                    className="form-control form-control-sm"
-                    placeholder={modoDeshabilitar === 'hitos' ? 'Buscar hito...' : 'Buscar proceso...'}
-                    value={modoDeshabilitar === 'hitos' ? busquedaHitosModal : busquedaProcesosModal}
-                    onChange={(e) => {
-                      if (modoDeshabilitar === 'hitos') {
-                        setBusquedaHitosModal(e.target.value)
-                      } else {
-                        setBusquedaProcesosModal(e.target.value)
-                      }
-                    }}
-                    style={{ maxWidth: 260 }}
-                  />
-                  <button
-                    className="btn btn-sm"
-                    style={{
-                      backgroundColor: atisaStyles.colors.light,
-                      border: `1px solid ${atisaStyles.colors.accent}`,
-                      color: atisaStyles.colors.primary,
-                      fontFamily: atisaStyles.fonts.secondary,
-                      fontWeight: '600',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onClick={() => {
-                      if (modoDeshabilitar === 'hitos') {
-                        const ids = Array.from(new Set(getHitosFiltrados().map(h => h.hito_id)))
-                        setSelectedHitosMaestro(new Set(ids))
-                      } else {
-                        // Seleccionar todos los procesos y sus hitos
-                        const procesosIds = getProcesosFiltrados().map(p => p.id)
-                        setSelectedProcesos(new Set(procesosIds))
-                        const todosLosHitos = getHitosFiltrados().map(h => h.hito_id)
-                        setSelectedHitosMaestro(new Set(todosLosHitos))
-                      }
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                      e.currentTarget.style.color = 'white'
-                      e.currentTarget.style.borderColor = atisaStyles.colors.accent
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 161, 222, 0.3)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = atisaStyles.colors.light
-                      e.currentTarget.style.color = atisaStyles.colors.primary
-                      e.currentTarget.style.borderColor = atisaStyles.colors.accent
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }}
-                  >Seleccionar todos</button>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    style={{
-                      fontFamily: atisaStyles.fonts.secondary,
-                      fontWeight: '600',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onClick={() => {
-                      setSelectedHitosMaestro(new Set())
-                      setSelectedProcesos(new Set())
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#6c757d'
-                      e.currentTarget.style.color = 'white'
-                      e.currentTarget.style.borderColor = '#6c757d'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(108, 117, 125, 0.3)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent'
-                      e.currentTarget.style.color = '#6c757d'
-                      e.currentTarget.style.borderColor = '#6c757d'
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }}
-                  >Limpiar</button>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px', maxHeight: 320, overflowY: 'auto' }}>
-                  {modoDeshabilitar === 'hitos' ? (
-                    // Lista de hitos
-                    Array.from(new Set(getHitosFiltrados().map(h => `${h.hito_id}|${getNombreHito(h.hito_id)}`)))
-                      .map(key => {
-                        const [idStr, nombre] = key.split('|')
-                        return { id: parseInt(idStr, 10), nombre }
-                      })
-                      .filter(item =>
-                        item.nombre
-                          .toLowerCase()
-                          .normalize('NFD')
-                          .replace(/[\u0300-\u036f]/g, '')
-                          .includes(
-                            busquedaHitosModal
-                              .toLowerCase()
-                              .normalize('NFD')
-                              .replace(/[\u0300-\u036f]/g, '')
-                              .trim()
-                          )
-                      )
-                      .sort((a, b) => a.nombre.localeCompare(b.nombre))
-                      .map(({ id, nombre }) => {
-                        const checked = selectedHitosMaestro.has(id)
-                        return (
-                          <div
-                            key={id}
-                            onClick={() => {
-                              setSelectedHitosMaestro(prev => {
-                                const n = new Set(prev);
-                                checked ? n.delete(id) : n.add(id);
-                                return n
-                              })
-                              // Sincronizar procesos después de un pequeño delay para que el estado se actualice
-                              setTimeout(() => {
-                                sincronizarProcesosDesdeHitos()
-                              }, 0)
-                            }}
-                            role="button"
-                            className="d-flex align-items-center"
-                            style={{
-                              backgroundColor: checked ? '#e8f5e9' : 'white',
-                              border: `2px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
-                              borderRadius: 10,
-                              padding: '10px 12px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                              transition: 'all .2s ease'
-                            }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
-                            title={nombre}
-                          >
-                            <span
-                              className="d-inline-flex justify-content-center align-items-center me-2"
-                              style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: '50%',
-                                backgroundColor: checked ? atisaStyles.colors.secondary : '#f1f3f5',
-                                color: checked ? 'white' : atisaStyles.colors.primary,
-                                border: `1px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
-                                fontSize: 12,
-                                flexShrink: 0
-                              }}
-                            >
-                              {checked ? '✓' : ''}
-                            </span>
-                            <span style={{ fontWeight: 600, color: atisaStyles.colors.primary, fontSize: 13, lineHeight: 1.2 }}>{nombre}</span>
-                          </div>
-                        )
-                      })
-                  ) : (
-                    // Lista de procesos
-                    getProcesosFiltrados()
-                      .filter(proceso => {
-                        const procesoNombre = procesosList.find(p => p.id === proceso.proceso_id)?.nombre || ''
-                        return procesoNombre
-                          .toLowerCase()
-                          .normalize('NFD')
-                          .replace(/[\u0300-\u036f]/g, '')
-                          .includes(
-                            busquedaProcesosModal
-                              .toLowerCase()
-                              .normalize('NFD')
-                              .replace(/[\u0300-\u036f]/g, '')
-                              .trim()
-                          )
-                      })
-                      .sort((a, b) => {
-                        const nombreA = procesosList.find(p => p.id === a.proceso_id)?.nombre || ''
-                        const nombreB = procesosList.find(p => p.id === b.proceso_id)?.nombre || ''
-                        return nombreA.localeCompare(nombreB)
-                      })
-                      .map(proceso => {
-                        const procesoNombre = procesosList.find(p => p.id === proceso.proceso_id)?.nombre || ''
-                        const checked = selectedProcesos.has(proceso.id)
-                        return (
-                          <div
-                            key={proceso.id}
-                            onClick={() => {
-                              if (checked) {
-                                // Deseleccionar proceso y sus hitos
-                                setSelectedProcesos(prev => {
-                                  const n = new Set(prev)
-                                  n.delete(proceso.id)
-                                  return n
-                                })
-                                // Remover todos los hitos de este proceso
-                                const hitosDelProceso = getHitosFiltrados().filter(h => h.cliente_proceso_id === proceso.id)
-                                setSelectedHitosMaestro(prev => {
-                                  const n = new Set(prev)
-                                  hitosDelProceso.forEach(h => n.delete(h.hito_id))
-                                  return n
-                                })
-                              } else {
-                                // Seleccionar proceso y todos sus hitos
-                                setSelectedProcesos(prev => {
-                                  const n = new Set(prev)
-                                  n.add(proceso.id)
-                                  return n
-                                })
-                                // Agregar todos los hitos de este proceso
-                                const hitosDelProceso = getHitosFiltrados().filter(h => h.cliente_proceso_id === proceso.id)
-                                setSelectedHitosMaestro(prev => {
-                                  const n = new Set(prev)
-                                  hitosDelProceso.forEach(h => n.add(h.hito_id))
-                                  return n
-                                })
-                              }
-                            }}
-                            role="button"
-                            className="d-flex align-items-center"
-                            style={{
-                              backgroundColor: checked ? '#e8f5e9' : 'white',
-                              border: `2px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
-                              borderRadius: 10,
-                              padding: '10px 12px',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                              transition: 'all .2s ease'
-                            }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
-                            title={procesoNombre}
-                          >
-                            <span
-                              className="d-inline-flex justify-content-center align-items-center me-2"
-                              style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: '50%',
-                                backgroundColor: checked ? atisaStyles.colors.secondary : '#f1f3f5',
-                                color: checked ? 'white' : atisaStyles.colors.primary,
-                                border: `1px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
-                                fontSize: 12,
-                                flexShrink: 0
-                              }}
-                            >
-                              {checked ? '✓' : ''}
-                            </span>
-                            <span style={{ fontWeight: 600, color: atisaStyles.colors.primary, fontSize: 13, lineHeight: 1.2 }}>{procesoNombre}</span>
-                          </div>
-                        )
-                      })
-                  )}
-                </div>
-                <p style={{ margin: '8px 0 0 0' }}>
-                  {modoDeshabilitar === 'hitos'
-                    ? 'Se deshabilitarán los hitos maestros seleccionados a partir de la fecha indicada.'
-                    : 'Se deshabilitarán todos los hitos de los procesos seleccionados a partir de la fecha indicada.'
-                  }
-                </p>
-              </div>
-              <div className="modal-footer">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setShowDeshabilitarDesdeModal(false)}
-                  style={{
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#5a6268'
-                    e.currentTarget.style.borderColor = '#5a6268'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(108, 117, 125, 0.3)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#6c757d'
-                    e.currentTarget.style.borderColor = '#6c757d'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >Cancelar</button>
-                <button
-                  className="btn btn-danger"
-                  onClick={confirmarDeshabilitarDesde}
-                  disabled={!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0)}
-                  style={{
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    opacity: (!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0)) ? 0.6 : 1
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!(!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0))) {
-                      e.currentTarget.style.backgroundColor = '#c82333'
-                      e.currentTarget.style.borderColor = '#c82333'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.4)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!(!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0))) {
-                      e.currentTarget.style.backgroundColor = '#dc3545'
-                      e.currentTarget.style.borderColor = '#dc3545'
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }
-                  }}
-                >
-                  Deshabilitar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Modal de confirmación para habilitar/deshabilitar hito */}
-      {showConfirmarHabilitarModal && hitoAConfirmar && (
-        <div
-          className="modal fade show d-block"
-          tabIndex={-1}
+      {/* Modal de edición de hito mejorado */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg" centered>
+        <Modal.Header
           style={{
-            background: 'rgba(0, 80, 92, 0.5)',
-            zIndex: 10000,
-            backdropFilter: 'blur(2px)'
+            backgroundColor: atisaStyles.colors.primary,
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px 12px 0 0',
+            padding: '20px 24px'
           }}
         >
-          <div className="modal-dialog modal-dialog-centered">
-            <div
-              className="modal-content"
-              style={{
-                borderRadius: '16px',
-                border: `2px solid ${atisaStyles.colors.light}`,
-                boxShadow: '0 12px 40px rgba(0, 80, 92, 0.4)',
-                fontFamily: atisaStyles.fonts.secondary,
-                overflow: 'hidden'
-              }}
-            >
-              <div
-                className="modal-header"
-                style={{
-                  backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary,
-                  color: 'white',
-                  borderRadius: '14px 14px 0 0',
-                  border: 'none',
-                  padding: '20px 24px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <h5
-                  className="modal-title"
-                  style={{
-                    fontFamily: atisaStyles.fonts.primary,
-                    fontWeight: 'bold',
-                    margin: 0,
-                    fontSize: '1.3rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}
-                >
-                  <i className={`bi ${isHitoHabilitado(hitoAConfirmar) ? 'bi-x-circle-fill' : 'bi-check-circle-fill'}`} style={{ color: 'white', fontSize: '1.5rem' }}></i>
-                  {isHitoHabilitado(hitoAConfirmar) ? 'Deshabilitar Hito' : 'Habilitar Hito'}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close btn-close-white"
-                  onClick={cancelarCambioEstado}
-                  style={{
-                    filter: 'invert(1)',
-                    opacity: 0.8,
-                    transition: 'opacity 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = '1'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = '0.8'
-                  }}
-                ></button>
-              </div>
-              <div
-                className="modal-body"
-                style={{
-                  padding: '28px 24px',
-                  backgroundColor: 'white'
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '16px',
-                    marginBottom: '20px'
-                  }}
-                >
-                  <div
-                    style={{
-                      backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#fff3cd' : '#d1f0de',
-                      borderRadius: '50%',
-                      width: '48px',
-                      height: '48px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    <i className={`bi ${isHitoHabilitado(hitoAConfirmar) ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'}`} style={{ color: isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary, fontSize: '24px' }}></i>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h6
-                      style={{
-                        color: atisaStyles.colors.primary,
-                        marginBottom: '12px',
-                        fontFamily: atisaStyles.fonts.primary,
-                        fontWeight: 'bold',
-                        fontSize: '1rem'
-                      }}
-                    >
-                      <i className="bi bi-info-circle me-2"></i>
-                      Información del Hito
-                    </h6>
-                    <div
-                      style={{
-                        backgroundColor: '#f8f9fa',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        marginBottom: '16px',
-                        border: `1px solid ${atisaStyles.colors.light}`
-                      }}
-                    >
-                      <div style={{ marginBottom: '8px', fontFamily: atisaStyles.fonts.secondary }}>
-                        <strong>Hito:</strong> {getNombreHito(hitoAConfirmar.hito_id)}
-                      </div>
-                      <div style={{ marginBottom: '8px', fontFamily: atisaStyles.fonts.secondary }}>
-                        <strong>Proceso:</strong> {procesosList.find(p => p.id === procesos.find(cp => cp.id === hitoAConfirmar.cliente_proceso_id)?.proceso_id)?.nombre || 'Proceso desconocido'}
-                      </div>
-                      <div style={{ fontFamily: atisaStyles.fonts.secondary }}>
-                        <strong>Estado actual:</strong>
-                        <span
-                          style={{
-                            marginLeft: '8px',
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#d4edda' : '#f8d7da',
-                            color: isHitoHabilitado(hitoAConfirmar) ? '#155724' : '#721c24',
-                            border: `1px solid ${isHitoHabilitado(hitoAConfirmar) ? '#c3e6cb' : '#f5c6cb'}`
-                          }}
-                        >
-                          {isHitoHabilitado(hitoAConfirmar) ? '✓ Habilitado' : '✗ Deshabilitado'}
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      className="alert"
-                      style={{
-                        backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#fff3cd' : '#d1ecf1',
-                        border: `1px solid ${isHitoHabilitado(hitoAConfirmar) ? '#ffc107' : '#bee5eb'}`,
-                        color: isHitoHabilitado(hitoAConfirmar) ? '#856404' : '#0c5460',
-                        borderRadius: '8px',
-                        marginBottom: '0',
-                        fontFamily: atisaStyles.fonts.secondary
-                      }}
-                    >
-                      <i className="bi bi-exclamation-triangle me-2"></i>
-                      <strong>¿Está seguro?</strong>
-                      {isHitoHabilitado(hitoAConfirmar)
-                        ? ' Este hito será deshabilitado y no aparecerá en el calendario del cliente.'
-                        : ' Este hito será habilitado y estará disponible en el calendario del cliente.'
-                      }
-                    </div>
-                  </div>
+          <Modal.Title
+            style={{
+              fontFamily: atisaStyles.fonts.primary,
+              fontWeight: 'bold',
+              color: 'white',
+              fontSize: '1.25rem',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}
+          >
+            <i className="bi bi-pencil-square" style={{ color: 'white' }}></i>
+            Editar Hito
+          </Modal.Title>
+          <button
+            type="button"
+            className="btn-close btn-close-white"
+            onClick={() => setShowEditModal(false)}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '6px',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <i className="bi bi-x" style={{ color: 'white', fontSize: '16px' }}></i>
+          </button>
+        </Modal.Header>
+
+        <Modal.Body style={{ padding: '24px' }}>
+          {/* Información del hito */}
+          <div
+            className="mb-4 p-3"
+            style={{
+              backgroundColor: atisaStyles.colors.light,
+              borderRadius: '8px',
+              border: `1px solid ${atisaStyles.colors.accent}`
+            }}
+          >
+            <div className="row">
+              <div className="col-md-6">
+                <label style={{ fontSize: '12px', fontWeight: '600', color: atisaStyles.colors.dark, marginBottom: '4px' }}>
+                  HITO
+                </label>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: atisaStyles.colors.primary }}>
+                  {selectedHito ? getNombreHito(selectedHito.hito_id) : ''}
                 </div>
               </div>
-              <div
-                className="modal-footer"
-                style={{
-                  border: 'none',
-                  padding: '20px 24px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '0 0 14px 14px',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: '12px'
-                }}
-              >
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={cancelarCambioEstado}
-                  style={{
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(108, 117, 125, 0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#5a6268'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#6c757d'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(108, 117, 125, 0.2)'
-                  }}
-                >
-                  <i className="bi bi-x-circle me-2"></i>
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={confirmarCambioEstado}
-                  style={{
-                    backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary,
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    transition: 'all 0.3s ease',
-                    boxShadow: isHitoHabilitado(hitoAConfirmar) ? '0 2px 8px rgba(245, 158, 11, 0.3)' : '0 2px 8px rgba(156, 186, 57, 0.3)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = isHitoHabilitado(hitoAConfirmar) ? '#d97706' : atisaStyles.colors.accent
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = isHitoHabilitado(hitoAConfirmar) ? '0 4px 12px rgba(245, 158, 11, 0.4)' : '0 4px 12px rgba(156, 186, 57, 0.4)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = isHitoHabilitado(hitoAConfirmar) ? '0 2px 8px rgba(245, 158, 11, 0.3)' : '0 2px 8px rgba(156, 186, 57, 0.3)'
-                  }}
-                >
-                  <i className={`bi ${isHitoHabilitado(hitoAConfirmar) ? 'bi-x-circle' : 'bi-check-circle'} me-2`}></i>
-                  {isHitoHabilitado(hitoAConfirmar) ? 'Deshabilitar' : 'Habilitar'}
-                </button>
+              <div className="col-md-6">
+                <label style={{ fontSize: '12px', fontWeight: '600', color: atisaStyles.colors.dark, marginBottom: '4px' }}>
+                  PROCESO
+                </label>
+                <div style={{ fontSize: '14px', color: atisaStyles.colors.dark }}>
+                  {selectedHito ? getNombreProceso(selectedHito.cliente_proceso_id) : ''}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Modal para cargar procesos */}
-      {showCargarProcesosModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header" style={{ backgroundColor: atisaStyles.colors.primary, color: 'white' }}>
-                <h5 className="modal-title" style={{ color: 'white' }}>
-                  <i className="bi bi-plus-circle me-2"></i>
-                  Cargar Procesos al Calendario
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close btn-close-white"
-                  onClick={cerrarModalCargarProcesos}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
-                    <i className="bi bi-search me-2"></i>
-                    Buscar procesos
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Escriba para filtrar procesos..."
-                    value={busquedaProcesos}
-                    onChange={(e) => setBusquedaProcesos(e.target.value)}
-                    style={{
-                      fontFamily: atisaStyles.fonts.secondary,
-                      border: `2px solid ${atisaStyles.colors.light}`,
-                      borderRadius: '6px'
-                    }}
-                  />
+          {/* Formulario de edición */}
+          <div className="hito-edit-form">
+            {/* Advertencia sobre cambio de mes */}
+            {selectedHito && selectedPeriod && editForm.fecha_limite && (() => {
+              const fechaSeleccionada = new Date(editForm.fecha_limite)
+              const [year, month] = selectedPeriod.split('-').map(Number)
+              const mesSeleccionado = new Date(year, month - 1, 1)
+              const esMesDiferente = fechaSeleccionada.getFullYear() !== year || fechaSeleccionada.getMonth() !== (month - 1)
+
+              return esMesDiferente ? (
+                <div
+                  className="alert alert-warning mb-4"
+                  style={{
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffeaa7',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <i className="bi bi-exclamation-triangle" style={{ color: '#856404', fontSize: '16px' }}></i>
+                  <div>
+                    <strong style={{ color: '#856404', fontSize: '14px' }}>Cambio de mes detectado</strong>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#856404' }}>
+                      La fecha seleccionada está en un mes diferente al período actual.
+                      El hito se moverá al mes correspondiente.
+                    </p>
+                  </div>
                 </div>
+              ) : null
+            })()}
 
-                <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
-                    <i className="bi bi-calendar-date me-2"></i>
-                    Fecha de Inicio
+            <div className="row">
+              <div className="col-md-6">
+                <div className="form-group mb-4">
+                  <label className="form-label" style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: atisaStyles.colors.dark,
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <i className="bi bi-calendar3" style={{ color: atisaStyles.colors.primary }}></i>
+                    Fecha Límite *
                   </label>
                   <input
                     type="date"
                     className="form-control"
-                    value={fechaInicioProcesos}
-                    onChange={(e) => setFechaInicioProcesos(e.target.value)}
-                    required
+                    value={editForm.fecha_limite || ''}
+                    onChange={(e) => {
+                      const newVal = e.target.value || ''
+                      if (!newVal) {
+                        showToastMessage('La fecha límite es obligatoria y no se puede dejar vacía', 'warning')
+                        e.target.value = editForm.fecha_limite || ''
+                        return
+                      }
+                      setEditForm({ ...editForm, fecha_limite: newVal })
+                    }}
                     style={{
                       fontFamily: atisaStyles.fonts.secondary,
+                      fontSize: '14px',
                       border: `2px solid ${atisaStyles.colors.light}`,
-                      borderRadius: '6px',
+                      borderRadius: '8px',
+                      padding: '12px',
                       transition: 'all 0.3s ease'
                     }}
                     onFocus={(e) => {
@@ -3659,20 +2615,33 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
                     }}
                   />
                 </div>
+              </div>
 
-                <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
-                    <i className="bi bi-funnel me-2"></i>
-                    Filtrar por Temporalidad
+              <div className="col-md-6">
+                <div className="form-group mb-4">
+                  <label className="form-label" style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: atisaStyles.colors.dark,
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <i className="bi bi-clock" style={{ color: atisaStyles.colors.primary }}></i>
+                    Hora Límite
                   </label>
-                  <select
+                  <input
+                    type="time"
                     className="form-control"
-                    value={filtroTemporalidad}
-                    onChange={(e) => setFiltroTemporalidad(e.target.value)}
+                    value={editForm.hora_limite || ''}
+                    onChange={(e) => setEditForm({ ...editForm, hora_limite: e.target.value || null })}
                     style={{
                       fontFamily: atisaStyles.fonts.secondary,
+                      fontSize: '14px',
                       border: `2px solid ${atisaStyles.colors.light}`,
-                      borderRadius: '6px',
+                      borderRadius: '8px',
+                      padding: '12px',
                       transition: 'all 0.3s ease'
                     }}
                     onFocus={(e) => {
@@ -3683,226 +2652,1154 @@ const EditarCalendarioCliente: FC<Props> = ({ clienteId }) => {
                       e.target.style.borderColor = atisaStyles.colors.light
                       e.target.style.boxShadow = 'none'
                     }}
-                  >
-                    <option value="">Todas las temporalidades</option>
-                    <option value="mes">Mensual</option>
-                    <option value="trimestre">Trimestral</option>
-                    <option value="semestre">Semestral</option>
-                    <option value="año">Anual</option>
-                  </select>
+                  />
                 </div>
+              </div>
+            </div>
 
-                <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
-                    Procesos disponibles ({procesosDisponibles.filter(proceso => {
-                      const coincideNombre = proceso.nombre.toLowerCase().includes(busquedaProcesos.toLowerCase())
-                      const coincideTemporalidad = !filtroTemporalidad || proceso.temporalidad === filtroTemporalidad
-                      return coincideNombre && coincideTemporalidad
-                    }).length})
-                  </label>
-                  <div
-                    style={{
-                      maxHeight: '300px',
-                      overflowY: 'auto',
-                      border: `1px solid ${atisaStyles.colors.light}`,
-                      borderRadius: '6px',
-                      padding: '8px'
-                    }}
-                  >
-                    {procesosDisponibles
-                      .filter(proceso => {
-                        const coincideNombre = proceso.nombre.toLowerCase().includes(busquedaProcesos.toLowerCase())
-                        const coincideTemporalidad = !filtroTemporalidad || proceso.temporalidad === filtroTemporalidad
-                        return coincideNombre && coincideTemporalidad
-                      })
-                      .map((proceso) => {
-                        return (
-                          <div
-                            key={proceso.id}
-                            className="d-flex align-items-center p-2"
-                            style={{
-                              borderBottom: '1px solid #f0f0f0',
-                              cursor: 'pointer',
-                              borderRadius: '4px',
-                              transition: 'background-color 0.2s ease',
-                              backgroundColor: 'transparent'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = atisaStyles.colors.light + '20'
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent'
-                            }}
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              toggleSeleccionProceso(proceso.id)
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={procesosSeleccionados.has(proceso.id)}
-                              readOnly
-                              style={{ marginRight: '12px' }}
-                            />
-                            <div style={{ flex: 1 }}>
-                              <div style={{
-                                fontWeight: '600',
-                                color: atisaStyles.colors.primary,
-                                fontSize: '14px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                flexWrap: 'wrap'
-                              }}>
-                                <span>{proceso.nombre}</span>
-                                <span style={{
-                                  fontSize: '11px',
-                                  backgroundColor: atisaStyles.colors.accent,
-                                  color: 'white',
-                                  padding: '2px 8px',
-                                  borderRadius: '12px',
-                                  fontWeight: '500',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.5px'
-                                }}>
-                                  {proceso.temporalidad}
-                                </span>
-                              </div>
-                              {proceso.descripcion && (
-                                <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
-                                  {proceso.descripcion}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
+            {/* Motivo de Auditoría */}
+            <div className="form-group mb-4">
+              <label className="form-label" style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: atisaStyles.colors.dark,
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <i className="bi bi-flag" style={{ color: atisaStyles.colors.primary }}></i>
+                Motivo de modificación *
+              </label>
+              <select
+                className="form-select"
+                value={editForm.motivo}
+                onChange={(e) => setEditForm({ ...editForm, motivo: parseInt(e.target.value) as MotivoAuditoria })}
+                style={{
+                  fontFamily: atisaStyles.fonts.secondary,
+                  fontSize: '14px',
+                  border: `2px solid ${atisaStyles.colors.light}`,
+                  borderRadius: '8px',
+                  padding: '12px',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.accent
+                  e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.light
+                  e.target.style.boxShadow = 'none'
+                }}
+              >
+                <option value={0} disabled>Seleccione un motivo...</option>
+                {MOTIVOS_AUDITORIA.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.id}. {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                    {procesosDisponibles.filter(proceso => {
-                      const coincideNombre = proceso.nombre.toLowerCase().includes(busquedaProcesos.toLowerCase())
-                      const coincideTemporalidad = !filtroTemporalidad || proceso.temporalidad === filtroTemporalidad
-                      return coincideNombre && coincideTemporalidad
-                    }).length === 0 && (
-                        <div className="text-center py-4" style={{ color: '#666' }}>
-                          <i className="bi bi-inbox fs-1"></i>
-                          <p className="mt-2 mb-0">No hay procesos disponibles</p>
-                        </div>
-                      )}
+            {/* Observaciones */}
+            <div className="form-group mb-4">
+              <label className="form-label" style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: atisaStyles.colors.dark,
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <i className="bi bi-chat-text" style={{ color: atisaStyles.colors.primary }}></i>
+                Observaciones
+              </label>
+              <textarea
+                className="form-control"
+                value={editForm.observaciones}
+                onChange={(e) => setEditForm({ ...editForm, observaciones: e.target.value })}
+                rows={4}
+                placeholder="Agregue observaciones sobre los cambios realizados en este hito..."
+                style={{
+                  fontFamily: atisaStyles.fonts.secondary,
+                  fontSize: '14px',
+                  border: `2px solid ${atisaStyles.colors.light}`,
+                  borderRadius: '8px',
+                  padding: '12px',
+                  resize: 'vertical',
+                  transition: 'all 0.3s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.accent
+                  e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = atisaStyles.colors.light
+                  e.target.style.boxShadow = 'none'
+                }}
+              />
+            </div>
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer
+          style={{
+            backgroundColor: '#f8f9fa',
+            border: 'none',
+            padding: '20px 24px',
+            borderRadius: '0 0 12px 12px'
+          }}
+        >
+          <button
+            className="btn"
+            onClick={() => setShowEditModal(false)}
+            style={{
+              fontFamily: atisaStyles.fonts.secondary,
+              fontSize: '14px',
+              padding: '10px 20px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#5a6268'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#6c757d'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
+          >
+            <i className="bi bi-x-circle me-2"></i>
+            Cancelar
+          </button>
+          <button
+            className="btn"
+            onClick={guardarHito}
+            style={{
+              fontFamily: atisaStyles.fonts.secondary,
+              fontSize: '14px',
+              padding: '10px 20px',
+              backgroundColor: atisaStyles.colors.secondary,
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(156, 186, 57, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
+            <i className="bi bi-check-circle me-2"></i>
+            Guardar Cambios
+          </button>
+        </Modal.Footer>
+      </Modal>
+
+
+      {/* Notificaciones Toast */}
+      <CustomToast
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        message="Los cambios se han guardado correctamente"
+        type="success"
+        delay={3000}
+      />
+      <CustomToast
+        show={showError}
+        onClose={() => setShowError(false)}
+        message={errorMessage || 'Ha ocurrido un error al guardar los cambios'}
+        type="error"
+        delay={5000}
+      />
+
+      {/* Modal deshabilitar desde fecha */}
+      {
+        showDeshabilitarDesdeModal && (
+          <div className="modal fade show d-block" tabIndex={-1} style={{ background: 'rgba(0,0,0,0.3)' }}>
+            <div className="modal-dialog">
+              <div className="modal-content" style={{ borderRadius: 12 }}>
+                <div className="modal-header" style={{ backgroundColor: atisaStyles.colors.primary, color: 'white', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
+                  <h5 className="modal-title" style={{
+                    margin: 0,
+                    fontFamily: atisaStyles.fonts.primary,
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}>Deshabilitar desde fecha</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowDeshabilitarDesdeModal(false)}></button>
+                </div>
+                <div className="modal-body" style={{ fontFamily: atisaStyles.fonts.secondary }}>
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Fecha desde</label>
+                    <input type="date" className="form-control" value={fechaDesdeDeshabilitar} onChange={(e) => setFechaDesdeDeshabilitar(e.target.value)} />
                   </div>
-                </div>
-
-                {procesosSeleccionados.size > 0 && (
-                  <div className="mt-3">
-                    <h6 style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: atisaStyles.colors.primary,
-                      marginBottom: '8px'
-                    }}>
-                      <i className="bi bi-check-circle me-2"></i>
-                      Procesos seleccionados ({procesosSeleccionados.size})
-                    </h6>
-                    <div
-                      style={{
-                        maxHeight: '150px',
-                        overflowY: 'auto',
-                        border: `1px solid ${atisaStyles.colors.light}`,
-                        borderRadius: '6px',
-                        backgroundColor: '#f8f9fa'
-                      }}
-                    >
-                      {Array.from(procesosSeleccionados).map(procesoId => {
-                        const proceso = procesosDisponibles.find(p => p.id === procesoId)
-                        if (!proceso) return null
-                        return (
-                          <div
-                            key={proceso.id}
-                            className="d-flex align-items-center justify-content-between p-2"
-                            style={{ borderBottom: '1px solid #e9ecef' }}
-                          >
-                            <span style={{ fontSize: '13px', fontFamily: atisaStyles.fonts.secondary }}>
-                              {proceso.nombre}
-                            </span>
-                            <i
-                              className="bi bi-x-circle text-danger"
-                              style={{ cursor: 'pointer', fontSize: '14px' }}
-                              onClick={() => toggleSeleccionProceso(proceso.id)}
-                              title="Desmarcar proceso"
-                            ></i>
-                          </div>
-                        )
-                      })}
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: 600 }}>Tipo de deshabilitación</label>
+                    <div className="btn-group w-100" role="group">
+                      <button
+                        type="button"
+                        className={`btn ${modoDeshabilitar === 'hitos' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => {
+                          setModoDeshabilitar('hitos')
+                          // No resetear selecciones, solo limpiar búsquedas
+                          setBusquedaHitosModal('')
+                          setBusquedaProcesosModal('')
+                          // Sincronizar procesos basado en hitos seleccionados
+                          setTimeout(() => {
+                            sincronizarProcesosDesdeHitos()
+                          }, 0)
+                        }}
+                        style={{
+                          fontFamily: atisaStyles.fonts.secondary,
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (modoDeshabilitar !== 'hitos') {
+                            e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
+                            e.currentTarget.style.color = 'white'
+                            e.currentTarget.style.borderColor = atisaStyles.colors.primary
+                            e.currentTarget.style.transform = 'translateY(-2px)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (modoDeshabilitar !== 'hitos') {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.color = atisaStyles.colors.primary
+                            e.currentTarget.style.borderColor = atisaStyles.colors.primary
+                            e.currentTarget.style.transform = 'translateY(0)'
+                          }
+                        }}
+                      >
+                        Por Hitos
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn ${modoDeshabilitar === 'procesos' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => {
+                          setModoDeshabilitar('procesos')
+                          // No resetear selecciones, solo limpiar búsquedas
+                          setBusquedaHitosModal('')
+                          setBusquedaProcesosModal('')
+                          // Sincronizar hitos basado en procesos seleccionados
+                          setTimeout(() => {
+                            const procesosSeleccionados = Array.from(selectedProcesos)
+                            const hitosASeleccionar = new Set<number>()
+                            procesosSeleccionados.forEach(procesoId => {
+                              const hitosDelProceso = getHitosFiltrados().filter(h => h.cliente_proceso_id === procesoId)
+                              hitosDelProceso.forEach(h => hitosASeleccionar.add(h.hito_id))
+                            })
+                            setSelectedHitosMaestro(hitosASeleccionar)
+                          }, 0)
+                        }}
+                        style={{
+                          fontFamily: atisaStyles.fonts.secondary,
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (modoDeshabilitar !== 'procesos') {
+                            e.currentTarget.style.backgroundColor = atisaStyles.colors.primary
+                            e.currentTarget.style.color = 'white'
+                            e.currentTarget.style.borderColor = atisaStyles.colors.primary
+                            e.currentTarget.style.transform = 'translateY(-2px)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (modoDeshabilitar !== 'procesos') {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.color = atisaStyles.colors.primary
+                            e.currentTarget.style.borderColor = atisaStyles.colors.primary
+                            e.currentTarget.style.transform = 'translateY(0)'
+                          }
+                        }}
+                      >
+                        Por Procesos
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={cerrarModalCargarProcesos}
-                  style={{
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#5a6268'
-                    e.currentTarget.style.borderColor = '#5a6268'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(108, 117, 125, 0.3)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#6c757d'
-                    e.currentTarget.style.borderColor = '#6c757d'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <i className="bi bi-x-circle me-2"></i>
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  style={{
-                    backgroundColor: atisaStyles.colors.accent,
-                    color: 'white',
-                    opacity: (procesosSeleccionados.size === 0 || !fechaInicioProcesos) ? 0.6 : 1,
-                    fontFamily: atisaStyles.fonts.secondary,
-                    fontWeight: '600',
-                    transition: 'all 0.3s ease',
-                    border: `2px solid ${atisaStyles.colors.accent}`,
-                    boxShadow: (procesosSeleccionados.size > 0 && fechaInicioProcesos) ? '0 2px 8px rgba(0, 161, 222, 0.3)' : 'none'
-                  }}
-                  onClick={cargarProcesosSeleccionados}
-                  disabled={procesosSeleccionados.size === 0 || !fechaInicioProcesos}
-                  onMouseEnter={(e) => {
-                    if (!(procesosSeleccionados.size === 0 || !fechaInicioProcesos)) {
-                      e.currentTarget.style.backgroundColor = '#0099cc'
-                      e.currentTarget.style.borderColor = '#0099cc'
+                  <div className="mb-2 d-flex justify-content-between align-items-center" style={{ gap: '8px' }}>
+                    <label className="form-label m-0" style={{ fontWeight: 600 }}>
+                      {modoDeshabilitar === 'hitos' ? 'Seleccione los hitos a deshabilitar' : 'Seleccione los procesos a deshabilitar'}
+                    </label>
+                    <small style={{ color: atisaStyles.colors.dark }}>
+                      {modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size : selectedProcesos.size} seleccionados
+                    </small>
+                  </div>
+                  <div className="d-flex align-items-center mb-2" style={{ gap: '8px' }}>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      placeholder={modoDeshabilitar === 'hitos' ? 'Buscar hito...' : 'Buscar proceso...'}
+                      value={modoDeshabilitar === 'hitos' ? busquedaHitosModal : busquedaProcesosModal}
+                      onChange={(e) => {
+                        if (modoDeshabilitar === 'hitos') {
+                          setBusquedaHitosModal(e.target.value)
+                        } else {
+                          setBusquedaProcesosModal(e.target.value)
+                        }
+                      }}
+                      style={{ maxWidth: 260 }}
+                    />
+                    <button
+                      className="btn btn-sm"
+                      style={{
+                        backgroundColor: atisaStyles.colors.light,
+                        border: `1px solid ${atisaStyles.colors.accent}`,
+                        color: atisaStyles.colors.primary,
+                        fontFamily: atisaStyles.fonts.secondary,
+                        fontWeight: '600',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => {
+                        if (modoDeshabilitar === 'hitos') {
+                          const ids = Array.from(new Set(getHitosFiltrados().map(h => h.hito_id)))
+                          setSelectedHitosMaestro(new Set(ids))
+                        } else {
+                          // Seleccionar todos los procesos y sus hitos
+                          const procesosIds = getProcesosFiltrados().map(p => p.id)
+                          setSelectedProcesos(new Set(procesosIds))
+                          const todosLosHitos = getHitosFiltrados().map(h => h.hito_id)
+                          setSelectedHitosMaestro(new Set(todosLosHitos))
+                        }
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
+                        e.currentTarget.style.color = 'white'
+                        e.currentTarget.style.borderColor = atisaStyles.colors.accent
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 161, 222, 0.3)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = atisaStyles.colors.light
+                        e.currentTarget.style.color = atisaStyles.colors.primary
+                        e.currentTarget.style.borderColor = atisaStyles.colors.accent
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >Seleccionar todos</button>
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      style={{
+                        fontFamily: atisaStyles.fonts.secondary,
+                        fontWeight: '600',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onClick={() => {
+                        setSelectedHitosMaestro(new Set())
+                        setSelectedProcesos(new Set())
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#6c757d'
+                        e.currentTarget.style.color = 'white'
+                        e.currentTarget.style.borderColor = '#6c757d'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(108, 117, 125, 0.3)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.color = '#6c757d'
+                        e.currentTarget.style.borderColor = '#6c757d'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
+                    >Limpiar</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px', maxHeight: 320, overflowY: 'auto' }}>
+                    {modoDeshabilitar === 'hitos' ? (
+                      // Lista de hitos
+                      Array.from(new Set(getHitosFiltrados().map(h => `${h.hito_id}|${getNombreHito(h.hito_id)}`)))
+                        .map(key => {
+                          const [idStr, nombre] = key.split('|')
+                          return { id: parseInt(idStr, 10), nombre }
+                        })
+                        .filter(item =>
+                          item.nombre
+                            .toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .includes(
+                              busquedaHitosModal
+                                .toLowerCase()
+                                .normalize('NFD')
+                                .replace(/[\u0300-\u036f]/g, '')
+                                .trim()
+                            )
+                        )
+                        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+                        .map(({ id, nombre }) => {
+                          const checked = selectedHitosMaestro.has(id)
+                          return (
+                            <div
+                              key={id}
+                              onClick={() => {
+                                setSelectedHitosMaestro(prev => {
+                                  const n = new Set(prev);
+                                  checked ? n.delete(id) : n.add(id);
+                                  return n
+                                })
+                                // Sincronizar procesos después de un pequeño delay para que el estado se actualice
+                                setTimeout(() => {
+                                  sincronizarProcesosDesdeHitos()
+                                }, 0)
+                              }}
+                              role="button"
+                              className="d-flex align-items-center"
+                              style={{
+                                backgroundColor: checked ? '#e8f5e9' : 'white',
+                                border: `2px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
+                                borderRadius: 10,
+                                padding: '10px 12px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                transition: 'all .2s ease'
+                              }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
+                              title={nombre}
+                            >
+                              <span
+                                className="d-inline-flex justify-content-center align-items-center me-2"
+                                style={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: '50%',
+                                  backgroundColor: checked ? atisaStyles.colors.secondary : '#f1f3f5',
+                                  color: checked ? 'white' : atisaStyles.colors.primary,
+                                  border: `1px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
+                                  fontSize: 12,
+                                  flexShrink: 0
+                                }}
+                              >
+                                {checked ? '✓' : ''}
+                              </span>
+                              <span style={{ fontWeight: 600, color: atisaStyles.colors.primary, fontSize: 13, lineHeight: 1.2 }}>{nombre}</span>
+                            </div>
+                          )
+                        })
+                    ) : (
+                      // Lista de procesos
+                      getProcesosFiltrados()
+                        .filter(proceso => {
+                          const procesoNombre = procesosList.find(p => p.id === proceso.proceso_id)?.nombre || ''
+                          return procesoNombre
+                            .toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .includes(
+                              busquedaProcesosModal
+                                .toLowerCase()
+                                .normalize('NFD')
+                                .replace(/[\u0300-\u036f]/g, '')
+                                .trim()
+                            )
+                        })
+                        .sort((a, b) => {
+                          const nombreA = procesosList.find(p => p.id === a.proceso_id)?.nombre || ''
+                          const nombreB = procesosList.find(p => p.id === b.proceso_id)?.nombre || ''
+                          return nombreA.localeCompare(nombreB)
+                        })
+                        .map(proceso => {
+                          const procesoNombre = procesosList.find(p => p.id === proceso.proceso_id)?.nombre || ''
+                          const checked = selectedProcesos.has(proceso.id)
+                          return (
+                            <div
+                              key={proceso.id}
+                              onClick={() => {
+                                if (checked) {
+                                  // Deseleccionar proceso y sus hitos
+                                  setSelectedProcesos(prev => {
+                                    const n = new Set(prev)
+                                    n.delete(proceso.id)
+                                    return n
+                                  })
+                                  // Remover todos los hitos de este proceso
+                                  const hitosDelProceso = getHitosFiltrados().filter(h => h.cliente_proceso_id === proceso.id)
+                                  setSelectedHitosMaestro(prev => {
+                                    const n = new Set(prev)
+                                    hitosDelProceso.forEach(h => n.delete(h.hito_id))
+                                    return n
+                                  })
+                                } else {
+                                  // Seleccionar proceso y todos sus hitos
+                                  setSelectedProcesos(prev => {
+                                    const n = new Set(prev)
+                                    n.add(proceso.id)
+                                    return n
+                                  })
+                                  // Agregar todos los hitos de este proceso
+                                  const hitosDelProceso = getHitosFiltrados().filter(h => h.cliente_proceso_id === proceso.id)
+                                  setSelectedHitosMaestro(prev => {
+                                    const n = new Set(prev)
+                                    hitosDelProceso.forEach(h => n.add(h.hito_id))
+                                    return n
+                                  })
+                                }
+                              }}
+                              role="button"
+                              className="d-flex align-items-center"
+                              style={{
+                                backgroundColor: checked ? '#e8f5e9' : 'white',
+                                border: `2px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
+                                borderRadius: 10,
+                                padding: '10px 12px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                transition: 'all .2s ease'
+                              }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
+                              title={procesoNombre}
+                            >
+                              <span
+                                className="d-inline-flex justify-content-center align-items-center me-2"
+                                style={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: '50%',
+                                  backgroundColor: checked ? atisaStyles.colors.secondary : '#f1f3f5',
+                                  color: checked ? 'white' : atisaStyles.colors.primary,
+                                  border: `1px solid ${checked ? atisaStyles.colors.accent : '#e9ecef'}`,
+                                  fontSize: 12,
+                                  flexShrink: 0
+                                }}
+                              >
+                                {checked ? '✓' : ''}
+                              </span>
+                              <span style={{ fontWeight: 600, color: atisaStyles.colors.primary, fontSize: 13, lineHeight: 1.2 }}>{procesoNombre}</span>
+                            </div>
+                          )
+                        })
+                    )}
+                  </div>
+                  <p style={{ margin: '8px 0 0 0' }}>
+                    {modoDeshabilitar === 'hitos'
+                      ? 'Se deshabilitarán los hitos maestros seleccionados a partir de la fecha indicada.'
+                      : 'Se deshabilitarán todos los hitos de los procesos seleccionados a partir de la fecha indicada.'
+                    }
+                  </p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowDeshabilitarDesdeModal(false)}
+                    style={{
+                      fontFamily: atisaStyles.fonts.secondary,
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#5a6268'
+                      e.currentTarget.style.borderColor = '#5a6268'
                       e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 161, 222, 0.4)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!(procesosSeleccionados.size === 0 || !fechaInicioProcesos)) {
-                      e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
-                      e.currentTarget.style.borderColor = atisaStyles.colors.accent
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(108, 117, 125, 0.3)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#6c757d'
+                      e.currentTarget.style.borderColor = '#6c757d'
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 161, 222, 0.3)'
-                    }
-                  }}
-                >
-                  <i className="bi bi-plus-circle me-2"></i>
-                  Cargar {procesosSeleccionados.size > 0 ? `(${procesosSeleccionados.size})` : ''}
-                </button>
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
+                  >Cancelar</button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={confirmarDeshabilitarDesde}
+                    disabled={!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0)}
+                    style={{
+                      fontFamily: atisaStyles.fonts.secondary,
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease',
+                      opacity: (!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0)) ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!(!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0))) {
+                        e.currentTarget.style.backgroundColor = '#c82333'
+                        e.currentTarget.style.borderColor = '#c82333'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.4)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!(!fechaDesdeDeshabilitar || (modoDeshabilitar === 'hitos' ? selectedHitosMaestro.size === 0 : selectedProcesos.size === 0))) {
+                        e.currentTarget.style.backgroundColor = '#dc3545'
+                        e.currentTarget.style.borderColor = '#dc3545'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }
+                    }}
+                  >
+                    Deshabilitar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
+
+      {/* Modal de confirmación para habilitar/deshabilitar hito */}
+      {
+        showConfirmarHabilitarModal && hitoAConfirmar && (
+          <div
+            className="modal fade show d-block"
+            tabIndex={-1}
+            style={{
+              background: 'rgba(0, 80, 92, 0.5)',
+              zIndex: 10000,
+              backdropFilter: 'blur(2px)'
+            }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div
+                className="modal-content"
+                style={{
+                  borderRadius: '16px',
+                  border: `2px solid ${atisaStyles.colors.light}`,
+                  boxShadow: '0 12px 40px rgba(0, 80, 92, 0.4)',
+                  fontFamily: atisaStyles.fonts.secondary,
+                  overflow: 'hidden'
+                }}
+              >
+                <div
+                  className="modal-header"
+                  style={{
+                    backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary,
+                    color: 'white',
+                    borderRadius: '14px 14px 0 0',
+                    border: 'none',
+                    padding: '20px 24px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <h5
+                    className="modal-title"
+                    style={{
+                      fontFamily: atisaStyles.fonts.primary,
+                      fontWeight: 'bold',
+                      margin: 0,
+                      fontSize: '1.3rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}
+                  >
+                    <i className={`bi ${isHitoHabilitado(hitoAConfirmar) ? 'bi-x-circle-fill' : 'bi-check-circle-fill'}`} style={{ color: 'white', fontSize: '1.5rem' }}></i>
+                    {isHitoHabilitado(hitoAConfirmar) ? 'Deshabilitar Hito' : 'Habilitar Hito'}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={cancelarCambioEstado}
+                    style={{
+                      filter: 'invert(1)',
+                      opacity: 0.8,
+                      transition: 'opacity 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.8'
+                    }}
+                  ></button>
+                </div>
+                <div
+                  className="modal-body"
+                  style={{
+                    padding: '28px 24px',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '16px',
+                      marginBottom: '20px'
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#fff3cd' : '#d1f0de',
+                        borderRadius: '50%',
+                        width: '48px',
+                        height: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                    >
+                      <i className={`bi ${isHitoHabilitado(hitoAConfirmar) ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'}`} style={{ color: isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary, fontSize: '24px' }}></i>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h6
+                        style={{
+                          color: atisaStyles.colors.primary,
+                          marginBottom: '12px',
+                          fontFamily: atisaStyles.fonts.primary,
+                          fontWeight: 'bold',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        <i className="bi bi-info-circle me-2"></i>
+                        Información del Hito
+                      </h6>
+                      <div
+                        style={{
+                          backgroundColor: '#f8f9fa',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          marginBottom: '16px',
+                          border: `1px solid ${atisaStyles.colors.light}`
+                        }}
+                      >
+                        <div style={{ marginBottom: '8px', fontFamily: atisaStyles.fonts.secondary }}>
+                          <strong>Hito:</strong> {getNombreHito(hitoAConfirmar.hito_id)}
+                        </div>
+                        <div style={{ marginBottom: '8px', fontFamily: atisaStyles.fonts.secondary }}>
+                          <strong>Proceso:</strong> {procesosList.find(p => p.id === procesos.find(cp => cp.id === hitoAConfirmar.cliente_proceso_id)?.proceso_id)?.nombre || 'Proceso desconocido'}
+                        </div>
+                        <div style={{ fontFamily: atisaStyles.fonts.secondary }}>
+                          <strong>Estado actual:</strong>
+                          <span
+                            style={{
+                              marginLeft: '8px',
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#d4edda' : '#f8d7da',
+                              color: isHitoHabilitado(hitoAConfirmar) ? '#155724' : '#721c24',
+                              border: `1px solid ${isHitoHabilitado(hitoAConfirmar) ? '#c3e6cb' : '#f5c6cb'}`
+                            }}
+                          >
+                            {isHitoHabilitado(hitoAConfirmar) ? '✓ Habilitado' : '✗ Deshabilitado'}
+                          </span>
+                        </div>
+                      </div>
+                      <div
+                        className="alert"
+                        style={{
+                          backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#fff3cd' : '#d1ecf1',
+                          border: `1px solid ${isHitoHabilitado(hitoAConfirmar) ? '#ffc107' : '#bee5eb'}`,
+                          color: isHitoHabilitado(hitoAConfirmar) ? '#856404' : '#0c5460',
+                          borderRadius: '8px',
+                          marginBottom: '0',
+                          fontFamily: atisaStyles.fonts.secondary
+                        }}
+                      >
+                        <i className="bi bi-exclamation-triangle me-2"></i>
+                        <strong>¿Está seguro?</strong>
+                        {isHitoHabilitado(hitoAConfirmar)
+                          ? ' Este hito será deshabilitado y no aparecerá en el calendario del cliente.'
+                          : ' Este hito será habilitado y estará disponible en el calendario del cliente.'
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="modal-footer"
+                  style={{
+                    border: 'none',
+                    padding: '20px 24px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '0 0 14px 14px',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '12px'
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={cancelarCambioEstado}
+                    style={{
+                      backgroundColor: '#6c757d',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontFamily: atisaStyles.fonts.secondary,
+                      fontWeight: '600',
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 2px 8px rgba(108, 117, 125, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#5a6268'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.3)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#6c757d'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(108, 117, 125, 0.2)'
+                    }}
+                  >
+                    <i className="bi bi-x-circle me-2"></i>
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={confirmarCambioEstado}
+                    style={{
+                      backgroundColor: isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary,
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontFamily: atisaStyles.fonts.secondary,
+                      fontWeight: '600',
+                      padding: '10px 20px',
+                      fontSize: '14px',
+                      transition: 'all 0.3s ease',
+                      boxShadow: isHitoHabilitado(hitoAConfirmar) ? '0 2px 8px rgba(245, 158, 11, 0.3)' : '0 2px 8px rgba(156, 186, 57, 0.3)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isHitoHabilitado(hitoAConfirmar) ? '#d97706' : atisaStyles.colors.accent
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = isHitoHabilitado(hitoAConfirmar) ? '0 4px 12px rgba(245, 158, 11, 0.4)' : '0 4px 12px rgba(156, 186, 57, 0.4)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = isHitoHabilitado(hitoAConfirmar) ? '#f59e0b' : atisaStyles.colors.secondary
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = isHitoHabilitado(hitoAConfirmar) ? '0 2px 8px rgba(245, 158, 11, 0.3)' : '0 2px 8px rgba(156, 186, 57, 0.3)'
+                    }}
+                  >
+                    <i className={`bi ${isHitoHabilitado(hitoAConfirmar) ? 'bi-x-circle' : 'bi-check-circle'} me-2`}></i>
+                    {isHitoHabilitado(hitoAConfirmar) ? 'Deshabilitar' : 'Habilitar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Modal para cargar procesos */}
+      {
+        showCargarProcesosModal && (
+          <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header" style={{ backgroundColor: atisaStyles.colors.primary, color: 'white' }}>
+                  <h5 className="modal-title" style={{ color: 'white' }}>
+                    <i className="bi bi-plus-circle me-2"></i>
+                    Cargar Procesos al Calendario
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={cerrarModalCargarProcesos}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
+                      <i className="bi bi-search me-2"></i>
+                      Buscar procesos
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Escriba para filtrar procesos..."
+                      value={busquedaProcesos}
+                      onChange={(e) => setBusquedaProcesos(e.target.value)}
+                      style={{
+                        fontFamily: atisaStyles.fonts.secondary,
+                        border: `2px solid ${atisaStyles.colors.light}`,
+                        borderRadius: '6px'
+                      }}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
+                      <i className="bi bi-calendar-date me-2"></i>
+                      Fecha de Inicio
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={fechaInicioProcesos}
+                      onChange={(e) => setFechaInicioProcesos(e.target.value)}
+                      required
+                      style={{
+                        fontFamily: atisaStyles.fonts.secondary,
+                        border: `2px solid ${atisaStyles.colors.light}`,
+                        borderRadius: '6px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = atisaStyles.colors.accent
+                        e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = atisaStyles.colors.light
+                        e.target.style.boxShadow = 'none'
+                      }}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
+                      <i className="bi bi-funnel me-2"></i>
+                      Filtrar por Temporalidad
+                    </label>
+                    <select
+                      className="form-control"
+                      value={filtroTemporalidad}
+                      onChange={(e) => setFiltroTemporalidad(e.target.value)}
+                      style={{
+                        fontFamily: atisaStyles.fonts.secondary,
+                        border: `2px solid ${atisaStyles.colors.light}`,
+                        borderRadius: '6px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = atisaStyles.colors.accent
+                        e.target.style.boxShadow = `0 0 0 3px rgba(0, 161, 222, 0.1)`
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = atisaStyles.colors.light
+                        e.target.style.boxShadow = 'none'
+                      }}
+                    >
+                      <option value="">Todas las temporalidades</option>
+                      <option value="mes">Mensual</option>
+                      <option value="trimestre">Trimestral</option>
+                      <option value="semestre">Semestral</option>
+                      <option value="año">Anual</option>
+                    </select>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label" style={{ fontWeight: '600', color: atisaStyles.colors.primary }}>
+                      Procesos disponibles ({procesosDisponibles.filter(proceso => {
+                        const coincideNombre = proceso.nombre.toLowerCase().includes(busquedaProcesos.toLowerCase())
+                        const coincideTemporalidad = !filtroTemporalidad || proceso.temporalidad === filtroTemporalidad
+                        return coincideNombre && coincideTemporalidad
+                      }).length})
+                    </label>
+                    <div
+                      style={{
+                        maxHeight: '300px',
+                        overflowY: 'auto',
+                        border: `1px solid ${atisaStyles.colors.light}`,
+                        borderRadius: '6px',
+                        padding: '8px'
+                      }}
+                    >
+                      {procesosDisponibles
+                        .filter(proceso => {
+                          const coincideNombre = proceso.nombre.toLowerCase().includes(busquedaProcesos.toLowerCase())
+                          const coincideTemporalidad = !filtroTemporalidad || proceso.temporalidad === filtroTemporalidad
+                          return coincideNombre && coincideTemporalidad
+                        })
+                        .map((proceso) => {
+                          return (
+                            <div
+                              key={proceso.id}
+                              className="d-flex align-items-center p-2"
+                              style={{
+                                borderBottom: '1px solid #f0f0f0',
+                                cursor: 'pointer',
+                                borderRadius: '4px',
+                                transition: 'background-color 0.2s ease',
+                                backgroundColor: 'transparent'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = atisaStyles.colors.light + '20'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent'
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                toggleSeleccionProceso(proceso.id)
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={procesosSeleccionados.has(proceso.id)}
+                                readOnly
+                                style={{ marginRight: '12px' }}
+                              />
+                              <div style={{ flex: 1 }}>
+                                <div style={{
+                                  fontWeight: '600',
+                                  color: atisaStyles.colors.primary,
+                                  fontSize: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  flexWrap: 'wrap'
+                                }}>
+                                  <span>{proceso.nombre}</span>
+                                  <span style={{
+                                    fontSize: '11px',
+                                    backgroundColor: atisaStyles.colors.accent,
+                                    color: 'white',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontWeight: '500',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                  }}>
+                                    {proceso.temporalidad}
+                                  </span>
+                                </div>
+                                {proceso.descripcion && (
+                                  <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+                                    {proceso.descripcion}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+
+                      {procesosDisponibles.filter(proceso => {
+                        const coincideNombre = proceso.nombre.toLowerCase().includes(busquedaProcesos.toLowerCase())
+                        const coincideTemporalidad = !filtroTemporalidad || proceso.temporalidad === filtroTemporalidad
+                        return coincideNombre && coincideTemporalidad
+                      }).length === 0 && (
+                          <div className="text-center py-4" style={{ color: '#666' }}>
+                            <i className="bi bi-inbox fs-1"></i>
+                            <p className="mt-2 mb-0">No hay procesos disponibles</p>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+
+                  {procesosSeleccionados.size > 0 && (
+                    <div className="mt-3">
+                      <h6 style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: atisaStyles.colors.primary,
+                        marginBottom: '8px'
+                      }}>
+                        <i className="bi bi-check-circle me-2"></i>
+                        Procesos seleccionados ({procesosSeleccionados.size})
+                      </h6>
+                      <div
+                        style={{
+                          maxHeight: '150px',
+                          overflowY: 'auto',
+                          border: `1px solid ${atisaStyles.colors.light}`,
+                          borderRadius: '6px',
+                          backgroundColor: '#f8f9fa'
+                        }}
+                      >
+                        {Array.from(procesosSeleccionados).map(procesoId => {
+                          const proceso = procesosDisponibles.find(p => p.id === procesoId)
+                          if (!proceso) return null
+                          return (
+                            <div
+                              key={proceso.id}
+                              className="d-flex align-items-center justify-content-between p-2"
+                              style={{ borderBottom: '1px solid #e9ecef' }}
+                            >
+                              <span style={{ fontSize: '13px', fontFamily: atisaStyles.fonts.secondary }}>
+                                {proceso.nombre}
+                              </span>
+                              <i
+                                className="bi bi-x-circle text-danger"
+                                style={{ cursor: 'pointer', fontSize: '14px' }}
+                                onClick={() => toggleSeleccionProceso(proceso.id)}
+                                title="Desmarcar proceso"
+                              ></i>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={cerrarModalCargarProcesos}
+                    style={{
+                      fontFamily: atisaStyles.fonts.secondary,
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#5a6268'
+                      e.currentTarget.style.borderColor = '#5a6268'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(108, 117, 125, 0.3)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#6c757d'
+                      e.currentTarget.style.borderColor = '#6c757d'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
+                  >
+                    <i className="bi bi-x-circle me-2"></i>
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{
+                      backgroundColor: atisaStyles.colors.accent,
+                      color: 'white',
+                      opacity: (procesosSeleccionados.size === 0 || !fechaInicioProcesos) ? 0.6 : 1,
+                      fontFamily: atisaStyles.fonts.secondary,
+                      fontWeight: '600',
+                      transition: 'all 0.3s ease',
+                      border: `2px solid ${atisaStyles.colors.accent}`,
+                      boxShadow: (procesosSeleccionados.size > 0 && fechaInicioProcesos) ? '0 2px 8px rgba(0, 161, 222, 0.3)' : 'none'
+                    }}
+                    onClick={cargarProcesosSeleccionados}
+                    disabled={procesosSeleccionados.size === 0 || !fechaInicioProcesos}
+                    onMouseEnter={(e) => {
+                      if (!(procesosSeleccionados.size === 0 || !fechaInicioProcesos)) {
+                        e.currentTarget.style.backgroundColor = '#0099cc'
+                        e.currentTarget.style.borderColor = '#0099cc'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 161, 222, 0.4)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!(procesosSeleccionados.size === 0 || !fechaInicioProcesos)) {
+                        e.currentTarget.style.backgroundColor = atisaStyles.colors.accent
+                        e.currentTarget.style.borderColor = atisaStyles.colors.accent
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 161, 222, 0.3)'
+                      }
+                    }}
+                  >
+                    <i className="bi bi-plus-circle me-2"></i>
+                    Cargar {procesosSeleccionados.size > 0 ? `(${procesosSeleccionados.size})` : ''}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
 
       {/* Custom Toast */}
       <CustomToast

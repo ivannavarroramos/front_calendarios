@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap'
-import { KTSVG } from '../../../../_metronic/helpers'
 import { ProcesoHitos, deleteProcesoHitosMaestro } from '../../../api/procesoHitosMaestro'
 import { Proceso } from '../../../api/procesos'
 import { Hito, getHitosHabilitados } from '../../../api/hitos'

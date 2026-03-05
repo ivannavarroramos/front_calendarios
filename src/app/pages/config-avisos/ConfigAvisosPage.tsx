@@ -1,5 +1,4 @@
 import React, { FC, useEffect, useState } from 'react'
-import { KTCard, KTCardBody } from '../../../_metronic/helpers'
 import { Cliente, getClientesConDepartamentos, ConfiguracionAvisos } from '../../api/clientes'
 import { getAllSubdepartamentos, Subdepartamento } from '../../api/subdepartamentos'
 import { createConfigAvisos, updateConfigAvisos, ConfigAvisosPayload } from '../../api/configAvisos'
@@ -7,6 +6,7 @@ import { atisaStyles, getTableHeaderStyles, getTableCellStyles } from '../../sty
 import SharedPagination from '../../components/pagination/SharedPagination'
 import { Spinner } from 'react-bootstrap'
 import CustomToast from '../../components/ui/CustomToast'
+import PageHeader from '../../components/ui/PageHeader'
 
 const ConfigAvisosPage: FC = () => {
     const [allClientes, setAllClientes] = useState<Cliente[]>([])
@@ -583,28 +583,32 @@ const ConfigAvisosPage: FC = () => {
     }
 
     return (
-        <div style={{
-            fontFamily: atisaStyles.fonts.secondary,
-            boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-            border: `1px solid ${atisaStyles.colors.light}`,
-            borderRadius: '12px',
-            overflow: 'hidden',
-        }}>
-            <KTCard>
-                <div className='card-header border-0 pt-6' style={{
-                    background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-                    color: 'white',
-                    borderRadius: '8px 8px 0 0',
-                    padding: '24px 16px'
-                }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-                        <div className='d-flex align-items-center gap-3' style={{ justifyContent: 'flex-start' }}>
-                            <div className='d-flex align-items-center position-relative' style={{ position: 'relative' }}>
-                                <i className='bi bi-search position-absolute ms-6' style={{ color: atisaStyles.colors.light, zIndex: 1, left: '0px' }}></i>
+        <div className="container-fluid" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh', padding: '20px' }}>
+            <div className="d-flex flex-column">
+                <PageHeader
+                    title="Configuración de Avisos"
+                    subtitle="Gestión de notificaciones por departamento"
+                    icon="bell-fill"
+                    actions={
+                        <div className='d-flex align-items-center gap-3'>
+                            <div className='d-flex align-items-center position-relative'>
+                                <i className='bi bi-search position-absolute ms-4' style={{ color: atisaStyles.colors.light, zIndex: 1 }}></i>
                                 <input
-                                    type='text' className='form-control form-control-solid w-250px ps-14' placeholder='Buscar por CIF y Cliente...'
-                                    value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                                    style={{ backgroundColor: 'white', border: `2px solid ${atisaStyles.colors.light}`, borderRadius: '8px', fontFamily: atisaStyles.fonts.secondary, fontSize: '14px', paddingLeft: '40px', height: '40px' }}
+                                    type='text'
+                                    className='form-control ps-12'
+                                    placeholder='Buscar por CIF y Cliente...'
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        fontFamily: atisaStyles.fonts.secondary,
+                                        fontSize: '14px',
+                                        width: '250px',
+                                        height: '42px',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                                    }}
                                 />
                                 {searching && (
                                     <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 10 }}>
@@ -615,135 +619,153 @@ const ConfigAvisosPage: FC = () => {
                                 )}
                             </div>
                             <div className='d-flex align-items-center position-relative'>
-                                <i className='bi bi-funnel position-absolute ms-6' style={{ color: atisaStyles.colors.primary, zIndex: 1, left: '0px' }}></i>
-                                <select className='form-select form-select-solid w-250px ps-14' value={selectedDepartment} onChange={(e) => setSelectedDepartment(e.target.value)} disabled={loadingDepartments} style={{ backgroundColor: 'white', border: `2px solid ${atisaStyles.colors.light}`, borderRadius: '8px', fontFamily: atisaStyles.fonts.secondary, fontSize: '14px', height: '40px', paddingLeft: '40px', cursor: 'pointer', appearance: 'none' }}>
+                                <i className='bi bi-funnel position-absolute ms-4' style={{ color: atisaStyles.colors.primary, zIndex: 1 }}></i>
+                                <select
+                                    className='form-select ps-12'
+                                    value={selectedDepartment}
+                                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                                    disabled={loadingDepartments}
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        fontFamily: atisaStyles.fonts.secondary,
+                                        fontSize: '14px',
+                                        height: '42px',
+                                        width: '250px',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
                                     <option value="">Todos los Departamentos</option>
-                                    {departments.map((dept) => (<option key={dept.id} value={dept.codSubDepar || ''}>{dept.nombre} {dept.codSubDepar ? `(${dept.codSubDepar})` : ''}</option>))}
+                                    {departments.map((dept) => (
+                                        <option key={dept.id} value={dept.codSubDepar || ''}>
+                                            {dept.nombre} {dept.codSubDepar ? `(${dept.codSubDepar})` : ''}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                            <h3 style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', color: 'white', margin: 0, whiteSpace: 'nowrap', fontSize: '2rem' }}>Configuración de Avisos</h3>
-                            <span style={{ fontSize: '0.9rem', opacity: 0.9 }}>Por Departamento</span>
+                    }
+                />
+
+                <div className='card border-0' style={{ boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)', borderRadius: '12px', overflow: 'hidden' }}>
+
+                    <div className='card-body p-0'>
+                        <div className="table-responsive" style={{ margin: 0 }}>
+                            <table className="table align-middle table-row-dashed fs-6 gy-0" style={{ fontFamily: atisaStyles.fonts.secondary, borderCollapse: 'separate', borderSpacing: '0', margin: 0, width: '100%' }}>
+                                <thead>
+                                    <tr className="text-start fw-bold fs-7 text-uppercase gs-0" style={{ backgroundColor: atisaStyles.colors.light, color: atisaStyles.colors.primary }}>
+                                        <th className="min-w-50px" style={getTableHeaderStyles()}></th>
+                                        <th className="min-w-100px" style={getTableHeaderStyles()}>ID</th>
+                                        <th className="min-w-120px" style={getTableHeaderStyles()}>CIF</th>
+                                        <th className="min-w-200px" style={getTableHeaderStyles()}>Cliente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr><td colSpan={4} className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr>
+                                    ) : paginatedClientes.length === 0 ? (
+                                        <tr><td colSpan={4} className="text-center py-5 text-muted">No se encontraron clientes.</td></tr>
+                                    ) : (
+                                        paginatedClientes.map((cliente, index) => {
+                                            const isExpanded = expandedClientValues.has(cliente.idcliente)
+                                            const deps = cliente.departamentos || []
+                                            return (
+                                                <React.Fragment key={cliente.idcliente}>
+                                                    <tr style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa', fontFamily: atisaStyles.fonts.secondary, transition: 'all 0.2s ease' }}>
+                                                        <td style={getTableCellStyles()}>
+                                                            <button type="button" className="btn btn-sm btn-icon btn-light btn-active-light-primary toggle h-25px w-25px" onClick={() => toggleExpand(cliente.idcliente)}>
+                                                                <i className={`bi ${isExpanded ? 'bi-dash' : 'bi-plus'}`}></i>
+                                                            </button>
+                                                        </td>
+                                                        <td style={{ ...getTableCellStyles(), color: atisaStyles.colors.primary, fontWeight: '600' }}>{cliente.idcliente}</td>
+                                                        <td style={{ ...getTableCellStyles(), color: atisaStyles.colors.dark, fontWeight: '600' }}>{cliente.cif}</td>
+                                                        <td style={{ ...getTableCellStyles(), color: atisaStyles.colors.dark, fontWeight: '600' }}>{cliente.razsoc}</td>
+                                                    </tr>
+                                                    {isExpanded && (
+                                                        <tr>
+                                                            <td colSpan={4} className="p-0">
+                                                                <div className="p-5 bg-light rounded-bottom" style={{ borderLeft: `4px solid ${atisaStyles.colors.primary}` }}>
+                                                                    <h5 className="mb-3 text-gray-800" style={{ fontFamily: atisaStyles.fonts.primary }}>Configuración de Departamentos</h5>
+                                                                    {deps.length > 0 ? (
+                                                                        <div className="table-responsive">
+                                                                            <table className="table table-sm table-bordered bg-white align-middle">
+                                                                                <thead className="bg-light">
+                                                                                    <tr className="fw-bold text-gray-600">
+                                                                                        <th className="min-w-150px">Cubos</th>
+                                                                                        <th className="min-w-400px">Configuración de Avisos</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {deps.map((dep, index) => {
+                                                                                        const config = getClientConfig(cliente.idcliente, dep.codSubDepar || '')
+                                                                                        const isSaving = savingDepartments.has(`${cliente.idcliente}-${dep.codSubDepar}`)
+                                                                                        return (
+                                                                                            <tr key={dep.codSubDepar || index}>
+                                                                                                <td className="fw-bold text-gray-700">{dep.codSubDepar?.substring(4)} - {dep.nombre}</td>
+                                                                                                <td className="p-2">
+                                                                                                    {/* Activar Todos / Unified Block */}
+                                                                                                    {renderUnifiedBlock(config, cliente.idcliente, dep.codSubDepar || '')}
+
+                                                                                                    {/* Individual Blocks */}
+                                                                                                    <div className={`row g-2 ${config.unified ? 'opacity-50' : ''}`} style={config.unified ? { pointerEvents: 'none' } : {}}>
+                                                                                                        <div className="col-md-4">
+                                                                                                            {renderAvisoBlock('Vence Hoy', 'vence_hoy', config.vence_hoy, cliente.idcliente, dep.codSubDepar || '', config.unified)}
+                                                                                                        </div>
+                                                                                                        <div className="col-md-4">
+                                                                                                            {renderAvisoBlock('Próximo Vencimiento', 'proximo_vencimiento', config.proximo_vencimiento, cliente.idcliente, dep.codSubDepar || '', config.unified)}
+                                                                                                        </div>
+                                                                                                        <div className="col-md-4">
+                                                                                                            {renderAvisoBlock('Vencido', 'vencido', config.vencido, cliente.idcliente, dep.codSubDepar || '', config.unified)}
+                                                                                                        </div>
+                                                                                                    </div>
+
+                                                                                                    <div className="d-flex justify-content-end mt-3">
+                                                                                                        <button
+                                                                                                            className="btn btn-sm btn-primary"
+                                                                                                            onClick={() => handleSaveConfig(cliente.idcliente, dep.codSubDepar || '')}
+                                                                                                            disabled={isSaving}
+                                                                                                        >
+                                                                                                            {isSaving ? (
+                                                                                                                <><span className="spinner-border spinner-border-sm me-2"></span>Guardando...</>
+                                                                                                            ) : (
+                                                                                                                'Guardar Configuración'
+                                                                                                            )}
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        )
+                                                                                    })}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="text-muted fst-italic">No hay departamentos asociados encontrados.</div>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </React.Fragment>
+                                            )
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                        <div></div>
+                        {filteredClientes.length > 0 && <SharedPagination currentPage={page} totalItems={filteredClientes.length} pageSize={limit} onPageChange={setPage} />}
+
+                        <CustomToast
+                            show={toast.show}
+                            message={toast.message}
+                            type={toast.type}
+                            onClose={() => setToast({ ...toast, show: false })}
+                        />
                     </div>
                 </div>
-
-                <KTCardBody className='p-0'>
-                    <div className="table-responsive" style={{ margin: 0 }}>
-                        <table className="table align-middle table-row-dashed fs-6 gy-0" style={{ fontFamily: atisaStyles.fonts.secondary, borderCollapse: 'separate', borderSpacing: '0', margin: 0, width: '100%' }}>
-                            <thead>
-                                <tr className="text-start fw-bold fs-7 text-uppercase gs-0" style={{ backgroundColor: atisaStyles.colors.light, color: atisaStyles.colors.primary }}>
-                                    <th className="min-w-50px" style={getTableHeaderStyles()}></th>
-                                    <th className="min-w-100px" style={getTableHeaderStyles()}>ID</th>
-                                    <th className="min-w-120px" style={getTableHeaderStyles()}>CIF</th>
-                                    <th className="min-w-200px" style={getTableHeaderStyles()}>Cliente</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr><td colSpan={4} className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr>
-                                ) : paginatedClientes.length === 0 ? (
-                                    <tr><td colSpan={4} className="text-center py-5 text-muted">No se encontraron clientes.</td></tr>
-                                ) : (
-                                    paginatedClientes.map((cliente, index) => {
-                                        const isExpanded = expandedClientValues.has(cliente.idcliente)
-                                        const deps = cliente.departamentos || []
-                                        return (
-                                            <React.Fragment key={cliente.idcliente}>
-                                                <tr style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa', fontFamily: atisaStyles.fonts.secondary, transition: 'all 0.2s ease' }}>
-                                                    <td style={getTableCellStyles()}>
-                                                        <button type="button" className="btn btn-sm btn-icon btn-light btn-active-light-primary toggle h-25px w-25px" onClick={() => toggleExpand(cliente.idcliente)}>
-                                                            <i className={`bi ${isExpanded ? 'bi-dash' : 'bi-plus'}`}></i>
-                                                        </button>
-                                                    </td>
-                                                    <td style={{ ...getTableCellStyles(), color: atisaStyles.colors.primary, fontWeight: '600' }}>{cliente.idcliente}</td>
-                                                    <td style={{ ...getTableCellStyles(), color: atisaStyles.colors.dark, fontWeight: '600' }}>{cliente.cif}</td>
-                                                    <td style={{ ...getTableCellStyles(), color: atisaStyles.colors.dark, fontWeight: '600' }}>{cliente.razsoc}</td>
-                                                </tr>
-                                                {isExpanded && (
-                                                    <tr>
-                                                        <td colSpan={4} className="p-0">
-                                                            <div className="p-5 bg-light rounded-bottom" style={{ borderLeft: `4px solid ${atisaStyles.colors.primary}` }}>
-                                                                <h5 className="mb-3 text-gray-800" style={{ fontFamily: atisaStyles.fonts.primary }}>Configuración de Departamentos</h5>
-                                                                {deps.length > 0 ? (
-                                                                    <div className="table-responsive">
-                                                                        <table className="table table-sm table-bordered bg-white align-middle">
-                                                                            <thead className="bg-light">
-                                                                                <tr className="fw-bold text-gray-600">
-                                                                                    <th className="min-w-150px">Cubos</th>
-                                                                                    <th className="min-w-400px">Configuración de Avisos</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                {deps.map((dep, index) => {
-                                                                                    const config = getClientConfig(cliente.idcliente, dep.codSubDepar || '')
-                                                                                    const isSaving = savingDepartments.has(`${cliente.idcliente}-${dep.codSubDepar}`)
-                                                                                    return (
-                                                                                        <tr key={dep.codSubDepar || index}>
-                                                                                            <td className="fw-bold text-gray-700">{dep.codSubDepar?.substring(4)} - {dep.nombre}</td>
-                                                                                            <td className="p-2">
-                                                                                                {/* Activar Todos / Unified Block */}
-                                                                                                {renderUnifiedBlock(config, cliente.idcliente, dep.codSubDepar || '')}
-
-                                                                                                {/* Individual Blocks */}
-                                                                                                <div className={`row g-2 ${config.unified ? 'opacity-50' : ''}`} style={config.unified ? { pointerEvents: 'none' } : {}}>
-                                                                                                    <div className="col-md-4">
-                                                                                                        {renderAvisoBlock('Vence Hoy', 'vence_hoy', config.vence_hoy, cliente.idcliente, dep.codSubDepar || '', config.unified)}
-                                                                                                    </div>
-                                                                                                    <div className="col-md-4">
-                                                                                                        {renderAvisoBlock('Próximo Vencimiento', 'proximo_vencimiento', config.proximo_vencimiento, cliente.idcliente, dep.codSubDepar || '', config.unified)}
-                                                                                                    </div>
-                                                                                                    <div className="col-md-4">
-                                                                                                        {renderAvisoBlock('Vencido', 'vencido', config.vencido, cliente.idcliente, dep.codSubDepar || '', config.unified)}
-                                                                                                    </div>
-                                                                                                </div>
-
-                                                                                                <div className="d-flex justify-content-end mt-3">
-                                                                                                    <button
-                                                                                                        className="btn btn-sm btn-primary"
-                                                                                                        onClick={() => handleSaveConfig(cliente.idcliente, dep.codSubDepar || '')}
-                                                                                                        disabled={isSaving}
-                                                                                                    >
-                                                                                                        {isSaving ? (
-                                                                                                            <><span className="spinner-border spinner-border-sm me-2"></span>Guardando...</>
-                                                                                                        ) : (
-                                                                                                            'Guardar Configuración'
-                                                                                                        )}
-                                                                                                    </button>
-                                                                                                </div>
-                                                                                            </td>
-                                                                                        </tr>
-                                                                                    )
-                                                                                })}
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="text-muted fst-italic">No hay departamentos asociados encontrados.</div>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                            </React.Fragment>
-                                        )
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {filteredClientes.length > 0 && <SharedPagination currentPage={page} totalItems={filteredClientes.length} pageSize={limit} onPageChange={setPage} />}
-
-                    <CustomToast
-                        show={toast.show}
-                        message={toast.message}
-                        type={toast.type}
-                        onClose={() => setToast({ ...toast, show: false })}
-                    />
-                </KTCardBody>
-            </KTCard>
+            </div>
         </div>
     )
 }

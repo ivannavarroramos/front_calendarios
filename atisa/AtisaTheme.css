@@ -1,0 +1,778 @@
+/* AtisaTheme.css - Optimizado para Densidad de Información Senior v1.5.0 */
+@import url('https://fonts.googleapis.com/css2?family=Aleo:wght@300;400;700&family=Lato:wght@300;400;700;900&display=swap');
+
+:root {
+    /* 🎨 Paleta Corporativa Exacta */
+    --atisa-dark: #00505C;
+    --atisa-primary: #00A1DE;
+    --atisa-accent: #9CBA39;
+
+    /* 🏢 Fondos y Estructura */
+    --atisa-bg-body: #F0F4F7;
+    --atisa-bg-card: #FFFFFF;
+    --atisa-border: #E2E8F0;
+
+    /* 🚥 Semántica */
+    --atisa-danger: #DC2626;
+    --atisa-warning: #F59E0B;
+    --atisa-success: #10B981;
+
+    /* ✍️ Tipografía Optimizada para Datos */
+    --font-headings: 'Aleo', serif;
+    --font-body: 'Lato', sans-serif;
+
+    /* 🧊 Estética Compacta Senior */
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --shadow-sm: 0 1px 3px rgba(0, 80, 92, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 80, 92, 0.1);
+}
+
+body {
+    background-color: var(--atisa-bg-body);
+    font-family: var(--font-body);
+    color: var(--atisa-dark);
+    -webkit-font-smoothing: antialiased;
+    font-size: 13px;
+    /* Reducción de escala base font de 15px/16px a 13px */
+    line-height: 1.5;
+}
+
+h1,
+.h1 {
+    font-size: 1.5rem;
+}
+
+h2,
+.h2 {
+    font-size: 1.25rem;
+}
+
+h3,
+.h3 {
+    font-size: 1.1rem;
+}
+
+h4,
+.h4 {
+    font-size: 1rem;
+}
+
+h5,
+.h5 {
+    font-size: 0.9rem;
+}
+
+/* 🛠 Utilidades de Interacción Senior */
+.transition-all {
+    transition: all 0.15s ease-in-out;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+.fw-black {
+    font-weight: 900 !important;
+}
+
+.text-muted-50 {
+    color: #64748B !important;
+}
+
+.text-accent {
+    color: var(--atisa-accent) !important;
+}
+
+.bg-accent {
+    background-color: var(--atisa-accent) !important;
+}
+
+.border-accent {
+    border-color: var(--atisa-accent) !important;
+}
+
+/* Scrollbars Ultra-Slim */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--atisa-primary);
+}
+
+/* 🏢 Clases Compactas para Listados */
+.compact-cell {
+    padding: 0.5rem 0.75rem !important;
+}
+
+.required::after {
+    content: " *";
+    color: var(--atisa-danger);
+    font-weight: 700;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 0.35rem;
+    border-radius: var(--radius-md);
+    transition: background 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.btn-icon:hover {
+    background: rgba(0, 161, 222, 0.08);
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Boostrap Overrides for Density */
+.card-header {
+    padding: 0.75rem 1rem !important;
+}
+
+.card-body {
+    padding: 1rem !important;
+}
+
+.p-4 {
+    padding: 1rem !important;
+}
+
+.p-5 {
+    padding: 1.25rem !important;
+}
+
+.mb-5 {
+    margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 0.75rem !important;
+}
+
+/* =========================================
+   📆 COMPONENTE CALENDARIO ATISA
+   ========================================= */
+
+.calendar-container {
+    margin-bottom: 2rem;
+}
+
+/* Header del Calendario de Vista Mes/Año */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--atisa-bg-card);
+    border: 1px solid var(--atisa-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.month-selector,
+.year-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.month-text,
+.year-text {
+    font-size: 1.25rem;
+    font-family: var(--font-headings);
+    font-weight: 700;
+    color: var(--atisa-dark);
+    min-width: 120px;
+    text-align: center;
+}
+
+.year-text {
+    min-width: 80px;
+}
+
+/* Grid del calendario mensual */
+.calendar-grid {
+    border: 1px solid var(--atisa-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background-color: var(--atisa-bg-card);
+    box-shadow: var(--shadow-sm);
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: var(--atisa-bg-body);
+    border-bottom: 1px solid var(--atisa-border);
+}
+
+.weekday {
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 700;
+    color: var(--atisa-dark);
+    border-right: 1px solid var(--atisa-border);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.weekday:last-child {
+    border-right: none;
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-day {
+    min-height: 85px;
+    padding: 0.5rem;
+    border-right: 1px solid var(--atisa-border);
+    border-bottom: 1px solid var(--atisa-border);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.calendar-day:nth-child(7n) {
+    border-right: none;
+}
+
+.calendar-day:hover {
+    background-color: var(--atisa-bg-body);
+}
+
+.calendar-day.other-month {
+    background-color: rgba(0, 80, 92, 0.02);
+    color: #94A3B8;
+}
+
+/* Días Especiales */
+.calendar-day.today {
+    background-color: rgba(0, 161, 222, 0.08);
+    /* Primary muy suave */
+    color: var(--atisa-primary);
+    font-weight: 700;
+}
+
+.calendar-day.holiday {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #B45309;
+    font-weight: 700;
+}
+
+.calendar-day.holiday:hover {
+    background-color: rgba(245, 158, 11, 0.15);
+}
+
+/* Indicadores de procedencia */
+.calendar-day.holiday-from-padre {
+    background-color: rgba(0, 161, 222, 0.1);
+    color: var(--atisa-dark);
+}
+
+.calendar-day.holiday-from-ccaa {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #064E3B;
+}
+
+.calendar-day.holiday-from-local {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #78350F;
+}
+
+.day-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+/* Nombres de Festivos */
+.holiday-name {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    right: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
+}
+
+.holiday-indicator {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 0.75rem;
+}
+
+.holiday-indicator.delete-icon {
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    padding: 3px;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.holiday-indicator.delete-icon:hover {
+    transform: scale(1.15);
+    background-color: #FEE2E2;
+}
+
+
+/* =========================================
+   📆 VISTA ANUAL (COMPACTA)
+   ========================================= */
+.annual-calendar-container {
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.annual-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding-bottom: 1rem;
+}
+
+.month-calendar-compact {
+    border: 1px solid var(--atisa-border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    background-color: var(--atisa-bg-card);
+    box-shadow: var(--shadow-sm);
+}
+
+.month-title-compact {
+    text-align: center;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-family: var(--font-headings);
+    font-weight: 700;
+    color: var(--atisa-dark);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--atisa-border);
+    text-transform: uppercase;
+}
+
+.weekdays-compact-small {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: var(--atisa-bg-body);
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.weekday-compact-small {
+    padding: 4px 2px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.65rem;
+    color: var(--atisa-dark);
+}
+
+.days-grid-compact-small {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-day-compact-small {
+    min-height: 32px;
+    padding: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 0.75rem;
+    transition: background-color 0.2s;
+    border-radius: 4px;
+}
+
+.calendar-day-compact-small:hover {
+    border-color: var(--atisa-primary);
+}
+
+.calendar-day-compact-small.other-month {
+    opacity: 0.3;
+}
+
+.calendar-day-compact-small.today {
+    background-color: rgba(0, 161, 222, 0.1);
+    color: var(--atisa-primary);
+    font-weight: 700;
+}
+
+.calendar-day-compact-small.holiday {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #B45309;
+    font-weight: 700;
+}
+
+.calendar-day-compact-small.holiday:hover {
+    background-color: rgba(245, 158, 11, 0.2);
+}
+
+.calendar-day-compact-small.holiday-from-padre {
+    background-color: rgba(0, 161, 222, 0.1);
+    color: var(--atisa-dark);
+}
+
+.calendar-day-compact-small.holiday-from-ccaa {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #064E3B;
+}
+
+.calendar-day-compact-small.holiday-from-local {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #78350F;
+}
+
+.day-number-small {
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+}
+
+.holiday-indicators-small {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.holiday-indicator-small {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    font-size: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.holiday-indicator-small.padre {
+    background-color: var(--atisa-primary);
+    color: white;
+}
+
+.holiday-indicator-small.ccaa {
+    background-color: var(--atisa-success);
+    color: white;
+}
+
+.holiday-indicator-small.local {
+    background-color: var(--atisa-warning);
+    color: white;
+}
+
+.delete-icon-small {
+    cursor: pointer;
+    transition: transform 0.2s;
+    background: white !important;
+    /* Force to show as button */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.delete-icon-small:hover {
+    transform: scale(1.3);
+}
+
+/* Listado de fechas integrado */
+.fechas-list {
+    background: var(--atisa-bg-body);
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--atisa-border);
+}
+
+.fecha-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--atisa-bg-card);
+    border: 1px solid var(--atisa-border);
+    margin-bottom: 0.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.fecha-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fecha-date {
+    font-weight: 700;
+    color: var(--atisa-primary);
+    min-width: 90px;
+}
+
+.fecha-name {
+    font-weight: 500;
+    color: var(--atisa-dark);
+}
+
+.view-toggle {
+    margin-left: auto;
+}
+
+/* =========================================
+   🔍 SEARCHABLE SELECT OPTIMIZED
+   ========================================= */
+
+.searchable-select {
+    position: relative;
+    width: 100%;
+}
+
+.searchable-select__label {
+    display: none;
+    /* Se maneja usualmente por el FormField envoltorio */
+}
+
+.searchable-select__container {
+    position: relative;
+    width: 100%;
+}
+
+.searchable-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-body);
+    font-size: 13px;
+    background-color: var(--atisa-bg-card);
+    border: 1px solid var(--atisa-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    color: var(--atisa-dark);
+}
+
+.searchable-select__trigger:hover:not(.searchable-select__trigger--disabled) {
+    border-color: var(--atisa-primary);
+}
+
+.searchable-select__trigger:focus {
+    outline: none;
+}
+
+.searchable-select__trigger--open {
+    border-color: var(--atisa-primary);
+    box-shadow: 0 0 0 3px rgba(0, 161, 222, 0.1);
+}
+
+.searchable-select__trigger--error {
+    border-color: var(--atisa-danger);
+}
+
+.searchable-select__trigger--disabled {
+    background-color: var(--atisa-bg-body);
+    color: #94A3B8;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.searchable-select__value {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.searchable-select__trigger--disabled .searchable-select__value {
+    font-weight: 600;
+}
+
+.searchable-select__chevron {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    color: #64748B;
+    transition: transform 0.2s ease;
+}
+
+.searchable-select__chevron--open {
+    transform: rotate(180deg);
+}
+
+.searchable-select__dropdown {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background-color: var(--atisa-bg-card);
+    border: 1px solid var(--atisa-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1060;
+    /* Asegurado visible en modals Bootstrap */
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.searchable-select__dropdown--bottom {
+    top: calc(100% + 4px);
+}
+
+.searchable-select__dropdown--top {
+    bottom: calc(100% + 4px);
+}
+
+.searchable-select__search {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--atisa-border);
+    background-color: #FAFBFC;
+    flex-shrink: 0;
+}
+
+.searchable-select__search-input {
+    width: 100%;
+    padding: 0.4rem 0.75rem;
+    font-size: 13px;
+    font-family: var(--font-body);
+    border: 1px solid var(--atisa-border);
+    border-radius: calc(var(--radius-md) - 2px);
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+.searchable-select__search-input:focus {
+    border-color: var(--atisa-primary);
+    box-shadow: 0 0 0 2px rgba(0, 161, 222, 0.1);
+}
+
+.searchable-select__options {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.searchable-select__no-results {
+    padding: 0.75rem;
+    text-align: center;
+    color: #64748B;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.searchable-select__option {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.searchable-select__option:last-child {
+    border-bottom: none;
+}
+
+.searchable-select__option:hover,
+.searchable-select__option--highlighted {
+    background-color: rgba(0, 161, 222, 0.05);
+}
+
+.searchable-select__option--selected {
+    background-color: rgba(0, 161, 222, 0.1);
+    font-weight: 700;
+    color: var(--atisa-primary);
+}
+
+.searchable-select__option-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.searchable-select__option-label {
+    font-size: 13px;
+    color: var(--atisa-dark);
+}
+
+.searchable-select__option--selected .searchable-select__option-label {
+    color: var(--atisa-primary);
+}
+
+.searchable-select__option-description {
+    font-size: 0.75rem;
+    color: #64748B;
+    margin-top: 2px;
+}
+
+.searchable-select__option-category {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--atisa-accent);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.searchable-select__error {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--atisa-danger);
+    font-weight: 600;
+}

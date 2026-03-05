@@ -11,6 +11,7 @@ import { useAuth } from '../../../../modules/auth/core/Auth'
 import api from '../../../../api/axiosConfig'
 import { getAllSubdepartamentos, Subdepartamento } from '../../../../api/subdepartamentos'
 import Select from 'react-select'
+import PageHeader from '../../../../components/ui/PageHeader'
 
 // Usamos la interfaz del API optimizado
 type HitoConInfo = HitoCompletoConInfo
@@ -664,128 +665,103 @@ const StatusTodosClientes: FC = () => {
 
     return (
         <div
+            className="container-fluid"
             style={{
                 fontFamily: atisaStyles.fonts.secondary,
                 backgroundColor: '#f8f9fa',
                 minHeight: '100vh',
+                padding: '20px',
                 display: 'flex',
                 flexDirection: 'column'
             }}
         >
             {/* Header compacto */}
-            <header
-                style={{
-                    background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-                    color: 'white',
-                    boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-                    width: '100%'
-                }}
-            >
-                <div style={{ padding: '20px 24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-                        {/* Columna izquierda: Botón Volver */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <button
-                                className="btn"
-                                onClick={() => navigate(`/clientes-documental-calendario`)}
-                                style={getSecondaryButtonStyles()}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'white'
-                                    e.currentTarget.style.color = atisaStyles.colors.primary
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'transparent'
-                                    e.currentTarget.style.color = 'white'
-                                }}
-                            >
-                                <i className="bi bi-arrow-left" style={{ color: 'inherit' }}></i>
-                                Volver a Gestor Documental / Clientes
-                            </button>
-                        </div>
-
-                        {/* Columna centro: Título */}
-                        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <h2
+            <PageHeader
+                title="Status de Hitos - Todos los Clientes"
+                subtitle="Vista global de todos los hitos de todos los clientes"
+                icon="info-circle"
+                backButton={
+                    <button
+                        className="btn d-flex align-items-center"
+                        onClick={() => navigate(`/clientes`)}
+                        style={{
+                            backgroundColor: 'transparent',
+                            border: `2px solid white`,
+                            color: 'white',
+                            fontFamily: atisaStyles.fonts.secondary,
+                            fontWeight: '600',
+                            borderRadius: '8px',
+                            padding: '8px 16px',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'white'
+                            e.currentTarget.style.color = atisaStyles.colors.primary
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.color = 'white'
+                        }}
+                    >
+                        <i className="bi bi-arrow-left me-2"></i>
+                        Volver
+                    </button>
+                }
+                actions={
+                    <div className="d-flex align-items-center gap-3">
+                        {/* Badge de filtros activos */}
+                        {(selectedCliente.length > 0 || selectedProceso.length > 0 || selectedHito.length > 0 || selectedEstados.size > 0 || selectedLineas.length > 0 || selectedDepartamentos.length > 0 || fechaDesde || fechaHasta || debouncedSearchTerm || claveFiltro !== '' || obligatorioFiltro !== '') && (
+                            <span
+                                className="badge rounded-pill"
                                 style={{
-                                    fontFamily: atisaStyles.fonts.primary,
-                                    fontWeight: 'bold',
+                                    backgroundColor: atisaStyles.colors.accent,
                                     color: 'white',
-                                    margin: 0,
-                                    fontSize: '2rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px'
-                                }}
-                            >
-                                <i className="bi bi-info-circle" style={{ color: 'white' }}></i>
-                                Status de Hitos - Todos los Clientes
-                            </h2>
-                            <p
-                                style={{
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    color: atisaStyles.colors.light,
-                                    margin: '4px 0 0 0',
-                                    fontSize: '1rem',
-                                    fontWeight: '500'
-                                }}
-                            >
-                                Vista global de todos los hitos de todos los clientes
-                            </p>
-                        </div>
-
-                        {/* Columna derecha: Botón Filtros */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center' }}>
-                            {/* Badge de filtros activos */}
-                            {(selectedCliente || selectedProceso || selectedHito || selectedEstados.size > 0 || selectedLineas.length > 0 || selectedDepartamentos.length > 0 || fechaDesde || fechaHasta || debouncedSearchTerm || claveFiltro !== '' || obligatorioFiltro !== '') && (
-                                <span style={{
-                                    backgroundColor: '#f1416c',
-                                    color: 'white',
-                                    borderRadius: '12px',
-                                    padding: '2px 10px',
+                                    padding: '8px 12px',
                                     fontSize: '12px',
-                                    fontWeight: '700'
-                                }}>
-                                    {[
-                                        selectedCliente.length,
-                                        selectedProceso.length,
-                                        selectedHito.length,
-                                        selectedEstados.size,
-                                        selectedLineas.length,
-                                        selectedDepartamentos.length,
-                                        fechaDesde ? 1 : 0,
-                                        fechaHasta ? 1 : 0,
-                                        debouncedSearchTerm ? 1 : 0,
-                                        claveFiltro !== '' ? 1 : 0,
-                                        obligatorioFiltro !== '' ? 1 : 0
-                                    ].reduce((a, b) => a + b, 0)} filtros activos
-                                </span>
-                            )}
-                            <button
-                                className="btn"
-                                onClick={() => setShowFilters(true)}
-                                style={{
-                                    backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '8px 16px',
-                                    fontSize: '14px',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
+                                    fontWeight: '700',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                                 }}
                             >
-                                <i className="bi bi-funnel"></i>
-                                Filtros
-                            </button>
-                        </div>
+                                <i className="bi bi-funnel-fill me-1"></i>
+                                {[
+                                    selectedCliente.length,
+                                    selectedProceso.length,
+                                    selectedHito.length,
+                                    selectedEstados.size,
+                                    selectedLineas.length,
+                                    selectedDepartamentos.length,
+                                    fechaDesde ? 1 : 0,
+                                    fechaHasta ? 1 : 0,
+                                    debouncedSearchTerm ? 1 : 0,
+                                    claveFiltro !== '' ? 1 : 0,
+                                    obligatorioFiltro !== '' ? 1 : 0
+                                ].reduce((a, b) => a + b, 0)} filtros activos
+                            </span>
+                        )}
+                        <button
+                            className="btn"
+                            onClick={() => setShowFilters(true)}
+                            style={{
+                                backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+                                color: 'white',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                borderRadius: '8px',
+                                fontFamily: atisaStyles.fonts.secondary,
+                                fontWeight: '600',
+                                padding: '8px 16px',
+                                fontSize: '14px',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <i className="bi bi-funnel"></i>
+                            Filtros
+                        </button>
                     </div>
-                </div>
-            </header>
+                }
+            />
 
             {/* Overlay transparente */}
             {showFilters && (
@@ -1172,14 +1148,14 @@ const StatusTodosClientes: FC = () => {
 
             </div>
 
-            <div className="p-4 flex-grow-1">
+            <div className="flex-grow-1">
                 {/* Tabla de hitos */}
                 <div
+                    className="card border-0"
                     style={{
                         backgroundColor: 'white',
                         borderRadius: '12px',
                         boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-                        border: `1px solid ${atisaStyles.colors.light}`,
                         overflow: 'hidden'
                     }}
                 >

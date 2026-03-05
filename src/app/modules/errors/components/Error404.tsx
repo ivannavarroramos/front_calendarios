@@ -1,42 +1,24 @@
-import {FC} from 'react'
-import {Link} from 'react-router-dom'
-import {toAbsoluteUrl} from '../../../../_metronic/helpers'
+import { FC } from 'react'
+import { Link } from 'react-router-dom'
 
 const Error404: FC = () => {
   return (
     <>
-      {/* begin::Title */}
-      <h1 className='fw-bolder fs-2hx text-gray-900 mb-4'>Oops!</h1>
-      {/* end::Title */}
-
-      {/* begin::Text */}
-      <div className='fw-semibold fs-6 text-gray-500 mb-7'>We can't find that page.</div>
-      {/* end::Text */}
-
-      {/* begin::Illustration */}
-      <div className='mb-3'>
-        <img
-          src={toAbsoluteUrl('media/auth/404-error.png')}
-          className='mw-100 mh-300px theme-light-show'
-          alt=''
-        />
-        <img
-          src={toAbsoluteUrl('media/auth/404-error-dark.png')}
-          className='mw-100 mh-300px theme-dark-show'
-          alt=''
-        />
-      </div>
-      {/* end::Illustration */}
-
-      {/* begin::Link */}
-      <div className='mb-0'>
-        <Link to='/dashboard' className='btn btn-sm btn-primary'>
-          Return Home
-        </Link>
-      </div>
-      {/* end::Link */}
+      <i className="fa-solid fa-triangle-exclamation mb-4" style={{ fontSize: '3rem', color: 'var(--atisa-warning)' }}></i>
+      <h1 style={{ fontFamily: 'var(--font-headings)', fontWeight: 700, color: 'var(--atisa-dark)', fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+        Página no encontrada
+      </h1>
+      <p style={{ color: '#64748B', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+        La página que buscas no existe o ha sido movida.
+      </p>
+      <Link to='/clientes-documental-calendario' className='btn btn-sm' style={{
+        backgroundColor: 'var(--atisa-accent)', color: '#fff', border: 'none',
+        borderRadius: 'var(--radius-md)', fontWeight: 700, padding: '0.5rem 1.25rem'
+      }}>
+        <i className="fa-solid fa-house me-2"></i>Volver al inicio
+      </Link>
     </>
   )
 }
 
-export {Error404}
+export { Error404 }

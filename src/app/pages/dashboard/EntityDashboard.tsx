@@ -1,7 +1,6 @@
 // src/app/pages/dashboard/EntityDashboard.js
 
 import React from 'react';
-import { KTSVG } from '../../../_metronic/helpers';
 import { Link } from 'react-router-dom';
 import { atisaStyles } from '../../styles/atisaStyles';
 

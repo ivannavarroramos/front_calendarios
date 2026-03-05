@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import { Send, FileText, Loader2, Search, Bot, User } from 'lucide-react';
 import api from '../api/axiosConfig';
 import { useAuth } from '../modules/auth/core/Auth';
+import { atisaStyles } from '../styles/atisaStyles';
+import PageHeader from './ui/PageHeader';
 
 // ==========================================
 // INTERFACES & TIPOS
@@ -273,57 +275,149 @@ export default function DocumentSearchChat() {
     };
 
     return (
-        <div className="flex flex-col h-full w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-[#00505C]/10 overflow-hidden font-sans">
+        <div
+            className="container-fluid"
+            style={{
+                fontFamily: atisaStyles.fonts.secondary,
+                backgroundColor: '#f8f9fa',
+                minHeight: '100vh',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column'
+            }}
+        >
+            <PageHeader
+                title="Asistente Documental"
+                subtitle="Consulta Inteligente de Normativas y Documentos"
+                icon="robot"
+            />
 
-            {/* HEADER + TOGGLE FILTROS */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#00505C]/10 bg-gradient-to-r from-[#00505C] to-[#007b8a] z-10 relative">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2 font-['Aleo']">
-                    <Bot className="text-[#9CBA39]" /> Asistente Documental RAG
-                </h2>
-            </div>
-
-            {/* ÁREA DE HISTORIAL DE CHAT */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 relative font-['Lato']" ref={scrollRef}>
-                {messages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-center px-4">
-                        <div className="max-w-md">
-                            <Bot className="mx-auto h-16 w-16 text-[#00A1DE]/40 mb-4" />
-                            <h3 className="text-xl font-bold text-[#00505C] mb-2 font-['Aleo']">¿En qué puedo ayudarte?</h3>
-                            <p className="text-sm text-gray-600">Realiza consultas sobre políticas, procedimientos, normativas o cualquier documento de la empresa.</p>
+            <div
+                className="flex-grow-1 d-flex flex-column bg-white shadow-sm border"
+                style={{
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    maxHeight: 'calc(100vh - 200px)',
+                    minHeight: '500px'
+                }}
+            >
+                {/* ÁREA DE HISTORIAL DE CHAT */}
+                <div
+                    className="flex-grow-1 overflow-auto p-4 p-md-6"
+                    style={{
+                        backgroundColor: '#f8fafc',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '24px'
+                    }}
+                    ref={scrollRef}
+                >
+                    {messages.length === 0 ? (
+                        <div className="d-flex h-100 align-items-center justify-content-center text-center px-4">
+                            <div style={{ maxWidth: '500px' }}>
+                                <div
+                                    style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        backgroundColor: '#e5f6fc',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 24px',
+                                        border: '1px solid rgba(0, 161, 222, 0.2)',
+                                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+                                    }}
+                                >
+                                    <Bot size={40} style={{ color: '#00A1DE' }} />
+                                </div>
+                                <h3
+                                    style={{
+                                        fontFamily: atisaStyles.fonts.primary,
+                                        color: atisaStyles.colors.primary,
+                                        fontSize: '24px',
+                                        fontWeight: '700',
+                                        marginBottom: '12px'
+                                    }}
+                                >
+                                    ¿En qué puedo ayudarte hoy?
+                                </h3>
+                                <p className="text-muted" style={{ lineHeight: '1.6' }}>
+                                    Realiza consultas sobre políticas, procedimientos, normativas o cualquier documento de la empresa. Mi respuesta incluirá referencias directas a las fuentes.
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    messages.map(msg => (
-                        <ChatBubble key={msg.id} message={msg} onSendReformulation={handleSend} />
-                    ))
-                )}
-                <ChatLoading isLoading={isLoading} />
-            </div>
-
-            {/* ZONA DE INPUT */}
-            <div className="p-4 bg-white border-t border-[#00505C]/10 font-['Lato']">
-                <div className="relative flex items-end gap-2 bg-[#f8fafc] p-2 rounded-2xl border border-[#00505C]/20 focus-within:ring-2 focus-within:ring-[#00A1DE] focus-within:border-[#00A1DE] transition-all shadow-sm">
-                    <textarea
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-                        }}
-                        placeholder="Pregunta algo sobre los documentos de la empresa..."
-                        className="w-full bg-transparent border-none focus:outline-none focus:ring-0 resize-none py-2 px-3 text-sm text-[#00505C] placeholder-[#00505C]/50 scrollbar-hide min-h-[44px] max-h-[150px]"
-                        rows={1}
-                        disabled={isLoading}
-                    />
-                    <button
-                        onClick={() => handleSend()}
-                        disabled={!inputValue.trim() || isLoading}
-                        className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-[#9CBA39] text-white hover:bg-[#7AB800] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-sm"
-                    >
-                        <Send size={18} />
-                    </button>
+                    ) : (
+                        messages.map(msg => (
+                            <ChatBubble key={msg.id} message={msg} onSendReformulation={handleSend} />
+                        ))
+                    )}
+                    <ChatLoading isLoading={isLoading} />
                 </div>
-                <div className="mt-2 text-center">
-                    <span className="text-[10px] text-gray-500">El sistema integrado usa Inteligencia Artificial y puede cometer errores. Comprueba la información consultando las fuentes originales.</span>
+
+                {/* ÁREA DE ENTRADA */}
+                <div className="p-4 bg-white border-top">
+                    <div
+                        className="d-flex align-items-center gap-3 p-3 border-2"
+                        style={{
+                            backgroundColor: '#f8fafc',
+                            borderRadius: '16px',
+                            border: '2px solid #e2e8f0',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <textarea
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+                            }}
+                            placeholder="Escribe tu pregunta aquí..."
+                            className="form-control bg-transparent border-0 flex-grow-1 shadow-none"
+                            style={{
+                                resize: 'none',
+                                padding: '8px 12px',
+                                fontSize: '14px',
+                                color: atisaStyles.colors.primary,
+                                minHeight: '44px',
+                                maxHeight: '150px'
+                            }}
+                            rows={1}
+                            disabled={isLoading}
+                        />
+                        <button
+                            onClick={() => handleSend()}
+                            disabled={!inputValue.trim() || isLoading}
+                            className="btn d-flex align-items-center justify-content-center"
+                            style={{
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '12px',
+                                backgroundColor: atisaStyles.colors.secondary,
+                                color: 'white',
+                                transition: 'all 0.2s ease',
+                                flexShrink: 0
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = atisaStyles.colors.accent}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = atisaStyles.colors.secondary}
+                        >
+                            <Send size={20} />
+                        </button>
+                    </div>
+                    <div className="mt-3 text-center">
+                        <span
+                            style={{
+                                fontSize: '10px',
+                                color: '#94a3b8',
+                                fontWeight: '600',
+                                letterSpacing: '0.05em',
+                                textTransform: 'uppercase'
+                            }}
+                        >
+                            <i className="bi bi-info-circle me-1"></i>
+                            IA Generativa — Verifique siempre con la documentación original
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

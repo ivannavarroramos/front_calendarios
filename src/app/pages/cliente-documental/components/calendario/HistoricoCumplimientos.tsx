@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { atisaStyles, getSecondaryButtonStyles } from '../../../../styles/atisaStyles'
 import { formatDateDisplay } from '../../../../utils/dateFormatter'
 import SharedPagination from '../../../../components/pagination/SharedPagination'
+import PageHeader from '../../../../components/ui/PageHeader'
 import { getClienteProcesoHitoCumplimientosByCliente, ClienteProcesoHitoCumplimiento } from '../../../../api/clienteProcesoHitoCumplimientos'
 import { Cliente, getClienteById } from '../../../../api/clientes'
 import { getAllHitos, Hito } from '../../../../api/hitos'
@@ -594,141 +595,91 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
 
     return (
         <div
+            className="container-fluid"
             style={{
                 fontFamily: atisaStyles.fonts.secondary,
                 backgroundColor: '#f8f9fa',
                 minHeight: '100vh',
+                padding: '20px',
                 display: 'flex',
                 flexDirection: 'column'
             }}
         >
-            {/* Header Sticky con Título */}
-            <header
-                style={{
-                    background: 'linear-gradient(135deg, #00505c 0%, #007b8a 100%)',
-                    color: 'white',
-                    boxShadow: '0 4px 20px rgba(0, 80, 92, 0.15)',
-                    width: '100%'
-                }}
-            >
-                <div style={{ padding: '24px 24px 20px 24px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', width: '100%' }}>
-                        {/* Columna izquierda: Botón Volver */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <button
-                                className="btn"
-                                onClick={() => navigate(`/clientes-documental-calendario`)}
-                                style={getSecondaryButtonStyles()}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'white'
-                                    e.currentTarget.style.color = atisaStyles.colors.primary
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'transparent'
-                                    e.currentTarget.style.color = 'white'
-                                }}
-                            >
-                                <i className="bi bi-arrow-left" style={{ color: 'inherit' }}></i>
-                                Volver a Gestor Documental / Clientes
-                            </button>
-                        </div>
-
-                        {/* Columna centro: Título */}
-                        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <h2
-                                style={{
-                                    fontFamily: atisaStyles.fonts.primary,
-                                    fontWeight: 'bold',
-                                    color: 'white',
-                                    margin: 0,
-                                    fontSize: '2rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px'
-                                }}
-                            >
-                                <i className="bi bi-clock-history" style={{ color: 'white' }}></i>
-                                Histórico de Cumplimientos
-                            </h2>
-                            <p
-                                style={{
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    color: atisaStyles.colors.light,
-                                    margin: '8px 0 0 0',
-                                    fontSize: '1.2rem',
-                                    fontWeight: '500'
-                                }}
-                            >
-                                {cliente?.razsoc || clienteId}
-                            </p>
-                        </div>
-
-                        {/* Columna derecha: Botón Ver Calendario y Toggle Filtros */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', alignItems: 'center' }}>
-                            {/* Badge filtros activos */}
+            <PageHeader
+                title="Histórico de Cumplimientos"
+                subtitle={cliente?.razsoc || clienteId}
+                icon="clock-history"
+                backButton={
+                    <button
+                        className="btn d-flex align-items-center"
+                        onClick={() => navigate(`/clientes-documental-calendario`)}
+                        style={getSecondaryButtonStyles()}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'white'
+                            e.currentTarget.style.color = atisaStyles.colors.primary
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                            e.currentTarget.style.color = 'white'
+                        }}
+                    >
+                        <i className="bi bi-arrow-left me-2"></i>
+                        Volver
+                    </button>
+                }
+                actions={
+                    <div className="d-flex align-items-center gap-3">
+                        <button
+                            className="btn"
+                            onClick={() => setShowFilters(true)}
+                            style={{
+                                backgroundColor: showFilters ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+                                color: 'white',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                borderRadius: '8px',
+                                fontFamily: atisaStyles.fonts.secondary,
+                                fontWeight: '600',
+                                padding: '8px 16px',
+                                fontSize: '14px',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <i className="bi bi-funnel"></i>
+                            Filtros
                             {(debouncedSearchTerm || selectedHito || selectedProceso || (selectedLineas.length > 0 || selectedCubos.length > 0 || selectedEstadoPlazo !== 'todos') || selectedEstadoProceso !== 'todos' || fechaDesde || fechaHasta) && (
-                                <span style={{ backgroundColor: '#f1416c', color: 'white', borderRadius: '12px', padding: '2px 10px', fontSize: '12px', fontWeight: '700' }}>
-                                    {[debouncedSearchTerm ? 1 : 0, selectedHito ? 1 : 0, selectedProceso ? 1 : 0, selectedLineas.length, selectedCubos.length, selectedEstadoProceso !== 'todos' ? 1 : 0, selectedEstadoPlazo !== 'todos' ? 1 : 0, fechaDesde ? 1 : 0, fechaHasta ? 1 : 0].reduce((a, b) => a + b, 0)} activos
+                                <span className="badge rounded-pill bg-danger" style={{ fontSize: '10px', marginLeft: '4px' }}>
+                                    {[debouncedSearchTerm ? 1 : 0, selectedHito ? 1 : 0, selectedProceso ? 1 : 0, selectedLineas.length, selectedCubos.length, selectedEstadoProceso !== 'todos' ? 1 : 0, selectedEstadoPlazo !== 'todos' ? 1 : 0, fechaDesde ? 1 : 0, fechaHasta ? 1 : 0].reduce((a, b) => a + b, 0)}
                                 </span>
                             )}
-                            <button
-                                className="btn"
-                                onClick={() => setShowFilters(true)}
-                                style={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '8px 16px',
-                                    fontSize: '14px',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                <i className="bi bi-funnel"></i>
-                                Filtros
-                            </button>
+                        </button>
 
-                            <button
-                                className="btn"
-                                onClick={() => navigate(`/cliente-calendario/${clienteId}`)}
-                                style={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                    color: 'white',
-                                    border: '2px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '8px',
-                                    fontFamily: atisaStyles.fonts.secondary,
-                                    fontWeight: '600',
-                                    padding: '12px 20px',
-                                    fontSize: '14px',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
-                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)'
-                                    e.currentTarget.style.transform = 'translateY(-2px)'
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                                    e.currentTarget.style.transform = 'translateY(0)'
-                                }}
-                            >
-                                <i className="bi bi-calendar3" style={{ color: 'white' }}></i>
-                                Ver Calendario
-                            </button>
-                        </div>
+                        <button
+                            className="btn"
+                            onClick={() => navigate(`/cliente-calendario/${clienteId}`)}
+                            style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                color: 'white',
+                                border: '1px solid rgba(255, 255, 255, 0.3)',
+                                borderRadius: '8px',
+                                fontFamily: atisaStyles.fonts.secondary,
+                                fontWeight: '600',
+                                padding: '8px 16px',
+                                fontSize: '14px',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <i className="bi bi-calendar3"></i>
+                            Ver Calendario
+                        </button>
                     </div>
-                </div>
-            </header>
+                }
+            />
 
             {/* Overlay transparente */}
             {showFilters && (
@@ -927,185 +878,61 @@ const HistoricoCumplimientos: FC<Props> = ({ clienteId }) => {
 
             </div>
 
-            <div className="p-4 flex-grow-1">
-
-                {/* Tabla de cumplimientos */}
+            <div className="flex-grow-1">
                 <div
+                    className="card border-0"
                     style={{
                         backgroundColor: 'white',
                         borderRadius: '12px',
                         boxShadow: '0 4px 20px rgba(0, 80, 92, 0.1)',
-                        border: `1px solid ${atisaStyles.colors.light}`,
                         overflow: 'hidden'
                     }}
                 >
-                    <div
-                        style={{
-                            padding: '1.5rem',
-                            borderBottom: `1px solid ${atisaStyles.colors.light}`,
-                            backgroundColor: atisaStyles.colors.light
-                        }}
-                    >
-                        <h3
-                            style={{
-                                fontFamily: atisaStyles.fonts.primary,
-                                color: atisaStyles.colors.primary,
-                                fontWeight: 'bold',
-                                margin: 0,
-                                fontSize: '1.3rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}
-                        >
-                            <i className="bi bi-list-ul" style={{ color: atisaStyles.colors.primary }}></i>
-                            Listado de Cumplimientos
-                        </h3>
-                    </div>
-
                     <div className="table-responsive">
-                        <table
-                            className="table table-hover"
-                            style={{
-                                fontFamily: atisaStyles.fonts.secondary,
-                                margin: 0
-                            }}
-                        >
-                            <thead style={{ position: 'sticky', top: 0, zIndex: 2 }}>
-                                <tr
-                                    style={{
-                                        backgroundColor: atisaStyles.colors.primary,
-                                        color: 'white',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                                    }}
-                                >
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('fecha_cumplimiento')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Fecha / Hora Cumplimiento {getSortIcon('fecha_cumplimiento')}
+                        <table className="table table-hover align-middle mb-0">
+                            <thead className="bg-light">
+                                <tr className="text-uppercase fs-8 fw-black text-muted" style={{ letterSpacing: '0.05em' }}>
+                                    <th className="ps-4 cursor-pointer" onClick={() => handleSort('fecha_cumplimiento')} style={{ padding: '16px 12px' }}>
+                                        Fecha / Hora {getSortIcon('fecha_cumplimiento')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('fecha_limite')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Fecha / Hora Límite {getSortIcon('fecha_limite')}
+                                    <th className="cursor-pointer" onClick={() => handleSort('fecha_limite')} style={{ padding: '16px 12px' }}>
+                                        Límite {getSortIcon('fecha_limite')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('hito')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
+                                    <th className="cursor-pointer" onClick={() => handleSort('hito')} style={{ padding: '16px 12px' }}>
                                         Hito {getSortIcon('hito')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('hito_tipo')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Responsable {getSortIcon('hito_tipo')}
+                                    <th className="cursor-pointer" onClick={() => handleSort('hito_tipo')} style={{ padding: '16px 12px' }}>
+                                        T. Hito {getSortIcon('hito_tipo')}
                                     </th>
-
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('estado_plazo')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Estado (Plazo) {getSortIcon('estado_plazo')}
+                                    <th className="cursor-pointer" onClick={() => handleSort('estado_plazo')} style={{ padding: '16px 12px' }}>
+                                        Plazo {getSortIcon('estado_plazo')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('proceso')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
+                                    <th className="cursor-pointer" onClick={() => handleSort('proceso')} style={{ padding: '16px 12px' }}>
                                         Proceso {getSortIcon('proceso')}
                                     </th>
-
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('linea')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
+                                    <th className="cursor-pointer" onClick={() => handleSort('linea')} style={{ padding: '16px 12px' }}>
                                         Línea {getSortIcon('linea')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('cubo')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
+                                    <th className="cursor-pointer" onClick={() => handleSort('cubo')} style={{ padding: '16px 12px' }}>
                                         Cubo {getSortIcon('cubo')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('usuario')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
+                                    <th className="cursor-pointer" onClick={() => handleSort('usuario')} style={{ padding: '16px 12px' }}>
                                         Usuario {getSortIcon('usuario')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('observacion')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer', textAlign: 'center' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Observaciones {getSortIcon('observacion')}
+                                    <th className="text-center" style={{ padding: '16px 12px' }}>
+                                        Obs.
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('proceso_periodo')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Período Proceso {getSortIcon('proceso_periodo')}
+                                    <th className="cursor-pointer" onClick={() => handleSort('proceso_periodo')} style={{ padding: '16px 12px' }}>
+                                        Período {getSortIcon('proceso_periodo')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('proceso_estado')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer', textAlign: 'center' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Estado Proceso {getSortIcon('proceso_estado')}
+                                    <th className="cursor-pointer" onClick={() => handleSort('proceso_estado')} style={{ padding: '16px 12px' }}>
+                                        E. Proc {getSortIcon('proceso_estado')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('fecha_creacion')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Fecha / Hora Creación {getSortIcon('fecha_creacion')}
+                                    <th className="cursor-pointer" onClick={() => handleSort('fecha_creacion')} style={{ padding: '16px 12px' }}>
+                                        Alta {getSortIcon('fecha_creacion')}
                                     </th>
-                                    <th
-                                        className="cursor-pointer user-select-none"
-                                        onClick={() => handleSort('num_documentos')}
-                                        style={{ fontFamily: atisaStyles.fonts.primary, fontWeight: 'bold', fontSize: '14px', padding: '16px 12px', border: 'none', color: 'white', backgroundColor: atisaStyles.colors.primary, transition: 'background-color 0.2s ease', cursor: 'pointer', textAlign: 'center' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)' }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = atisaStyles.colors.primary }}
-                                    >
-                                        Documentos {getSortIcon('num_documentos')}
+                                    <th className="pe-4 text-center" onClick={() => handleSort('num_documentos')} style={{ padding: '16px 12px' }}>
+                                        Docs {getSortIcon('num_documentos')}
                                     </th>
                                 </tr>
                             </thead>
